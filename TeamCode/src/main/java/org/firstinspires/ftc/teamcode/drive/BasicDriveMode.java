@@ -29,7 +29,7 @@ public class BasicDriveMode extends LinearOpMode {
 
             //needs to be changed to reflect new sideways drive -> left is forward, forward is right, right is back, back is left
             double iPower = Range.clip((y - x) * speedCoe, -1.0, 1.0);
-            double kPower = Range.clip((y + x) * speedCoe, -1.0, 1.0);
+            double kPower = Range.clip((y + x) * speedCoe, -1.0, 1.0)*-1;
 
             //i
             robot.leftFront.setPower(iPower);
