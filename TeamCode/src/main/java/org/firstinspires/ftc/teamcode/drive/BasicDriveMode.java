@@ -22,14 +22,14 @@ public class BasicDriveMode extends LinearOpMode {
         runtime.reset();
 
         while(opModeIsActive()) {
-            double x = gamepad1.left_stick_x;
-            double y = gamepad1.left_stick_y;
+            double x = gamepad1.left_stick_y;
+            double y = gamepad1.left_stick_x*-1;
 
             double speedCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1.0);
 
             //needs to be changed to reflect new sideways drive -> left is forward, forward is right, right is back, back is left
             double iPower = Range.clip((y - x) * speedCoe, -1.0, 1.0);
-            double kPower = Range.clip((y + x) * speedCoe, -1.0, 1.0)*-1;
+            double kPower = Range.clip((y + x) * speedCoe, -1.0, 1.0);
 
             //i
             robot.leftFront.setPower(iPower);
@@ -37,6 +37,14 @@ public class BasicDriveMode extends LinearOpMode {
             //k
             robot.rightFront.setPower(kPower);
             robot.leftBack.setPower(kPower);
+
+            if (gamepad1.a){
+                robot.leftFront.setPower(0);
+                robot.rightBack.setPower(0);
+                robot.rightFront.setPower(0);
+                robot.leftBack.setPower(0);
+                break;
+            }
         }
     }
 }
