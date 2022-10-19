@@ -35,11 +35,11 @@ public class BasicDriveMode extends LinearOpMode {
             double kPower = Range.clip((y + x) * speedCoe, -1.0, 1.0);
 
             //i
-            robot.leftFront.setPower(Range.clip(iPower - turn, -1.0, 1.0));
-            robot.rightBack.setPower(Range.clip(iPower + turn, -1.0, 1.0));
+            robot.leftFront.setPower(Range.clip(iPower + turn, -1.0, 1.0));
+            robot.rightBack.setPower(Range.clip(iPower - turn, -1.0, 1.0));
             //k
-            robot.rightFront.setPower(Range.clip(kPower + turn, -1.0, 1.0));
-            robot.leftBack.setPower(Range.clip(kPower - turn, -1.0, 1.0));
+            robot.rightFront.setPower(Range.clip(kPower - turn, -1.0, 1.0));
+            robot.leftBack.setPower(Range.clip(kPower + turn, -1.0, 1.0));
 
             if (gamepad1.a){
                 robot.leftFront.setPower(0);
