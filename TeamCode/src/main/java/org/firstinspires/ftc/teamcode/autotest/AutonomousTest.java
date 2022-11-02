@@ -47,7 +47,11 @@ public class AutonomousTest extends LinearOpMode {
         double sPrevPos;
         double sCurrPos = 0;
 
+        double start, stop;
+
         while(opModeIsActive()){
+            start = System.nanoTime();
+
             rPrevPos = rCurrPos;
             rCurrPos = robot.encR.getCurrentPosition();
             double dR = (rCurrPos - rPrevPos)/countsPerCm;
@@ -59,6 +63,8 @@ public class AutonomousTest extends LinearOpMode {
             sPrevPos = sCurrPos;
             sCurrPos = robot.encS.getCurrentPosition();
             double dS = (sCurrPos - sPrevPos)/countsPerCm;
+
+            stop = System.nanoTime();
 
             currentPos = odometry.nowPos(currentPos, dR, dL, dS);
 
@@ -75,6 +81,7 @@ public class AutonomousTest extends LinearOpMode {
 
             telemetry.addData("power", Arrays.toString(power));
             telemetry.addData("target", Arrays.toString(targetPoints[targetCounter]));
+            telemetry.addData("time", (stop - start)/1000000);
             telemetry.update();
         }
     }
