@@ -31,6 +31,10 @@ public class HardwareRobot {
         leftBack = hdwMap.get(DcMotorEx.class, "leftBack");
         rightBack = hdwMap.get(DcMotorEx.class, "rightBack");
 
+        encR = hdwMap.get(DcMotorEx.class, "encr");
+        encL = hdwMap.get(DcMotorEx.class, "encl");
+        encS = hdwMap.get(DcMotorEx.class, "encs");
+
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
         rightBack.setDirection(DcMotorSimple.Direction.FORWARD);

@@ -27,7 +27,9 @@ public class AutonomousTest extends LinearOpMode {
         robot.init(hardwareMap);
 
         waitForStart();
-        resetEncoders();
+        resetRight();
+        resetLeft();
+        resetSide();
 
         double[][] targetPoints= {{0, 0, 0},
                                   {100, 0, 0},
@@ -81,14 +83,21 @@ public class AutonomousTest extends LinearOpMode {
 
             telemetry.addData("power", Arrays.toString(power));
             telemetry.addData("target", Arrays.toString(targetPoints[targetCounter]));
-            telemetry.addData("time", (stop - start)/1000000);
+            telemetry.addData("time", (stop - start)/1000000000);
+            telemetry.addData("right", rCurrPos);
+            telemetry.addData("left", lCurrPos);
+            telemetry.addData("side", sCurrPos);
             telemetry.update();
         }
     }
 
-    private void resetEncoders(){
+    private void resetRight(){
         robot.encR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+    }
+    private void resetLeft(){
         robot.encL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+    }
+    private void resetSide(){
         robot.encS.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
     }
 
