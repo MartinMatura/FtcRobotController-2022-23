@@ -49,19 +49,22 @@ public class Odometry {
             angleToTarget += Math.PI;
         }
         double turn = nowAngle-angleToTarget;
-        if(Math.abs(turn) >= (Math.PI/40) && cooldown == 0 && howFar >= 10) {
+
+        if(Math.abs(turn) >= (Math.PI/36) && cooldown == 0 && howFar >= 10) {
+            //turn until facing target at 5° precision
             if(firstATT == 0){
                 firstATT = turn;
             }
             double progress = turn/firstATT;
             double p = Range.clip(full(progress, 0, 1, 1, 0), 0.2, 0.6);
             if(turn > 0) {
-                return new double[]{p, p, -p, -p};
-            }
-            if(turn < 0){
                 return new double[]{-p, -p, p, p};
             }
+            if(turn < 0){
+                return new double[]{p, p, -p, -p};
+            }
         } else if(howFar > 3 && Math.abs(turn) < (Math.PI/36)) { //tweak howFar
+            //go towards target until within 3cm
             cooldown += 1;
             if(cooldown == 100) {
                 cooldown = 0;
@@ -74,15 +77,16 @@ public class Odometry {
             //double k = easy(turn/(Math.PI/20), 0, 1, 1)/10*p;
             double k = 0;
             if(turn > 0) {
-                return new double[]{p, p, p-k, p-k};
+                return new double[]{-p+k, p-k, p, -p};
             }
             if(turn < 0){
-                return new double[]{p-k, p-k, p, p};
+                return new double[]{-p, p, p-k, -p+k};
             }
             if(turn == 0){
-                return new double[]{p, p, p, p};
+                return new double[]{-p, p, p, -p};
             }
         } else {
+            //if robot is within 10cm of target and aiming more than 5° away, turn
             finalStage = true;
             double finalTurn = nowAngle - targetAngle;
             if (firstFT == 0){
@@ -101,10 +105,10 @@ public class Odometry {
                 cooldown = 0;
             }
             if(finalTurn > 0) {
-                return new double[]{p, p, -p, -p};
+                return new double[]{-p, -p, p, p};
             }
             if(finalTurn < 0){
-                return new double[]{-p, -p, p, p};
+                return new double[]{p, p, -p, -p};
             }
         }
         return power;

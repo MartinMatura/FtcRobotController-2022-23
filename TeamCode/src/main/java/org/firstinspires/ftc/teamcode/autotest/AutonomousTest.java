@@ -82,11 +82,15 @@ public class AutonomousTest extends LinearOpMode {
             robot.rightBack.setPower(power[3]);
 
             telemetry.addData("power", Arrays.toString(power));
+            telemetry.addData("current pos", Arrays.toString(currentPos));
             telemetry.addData("target", Arrays.toString(targetPoints[targetCounter]));
             telemetry.addData("time", (stop - start)/1000000000);
-            telemetry.addData("right", rCurrPos);
-            telemetry.addData("left", lCurrPos);
-            telemetry.addData("side", sCurrPos);
+            telemetry.addData("left", lCurrPos/countsPerCm);
+            telemetry.addData("right", rCurrPos/countsPerCm);
+            telemetry.addData("side", sCurrPos/countsPerCm);
+            telemetry.addData("dL", dL);
+            telemetry.addData("dR", dR);
+            telemetry.addData("dS", dS);
             telemetry.update();
         }
     }
