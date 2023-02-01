@@ -8,7 +8,7 @@ import java.util.List;
 public class Odometry {
 
     public double[] nowPos(double[] prevPos, double dR, double dL, double dS) {
-        final double D = 34.5;
+        final double D = 37.7; //distance between side odometry wheels
         double dC = (dR + dL) / 2;
         double deltaAngle = (dR - dL) / D;
         double alpha = deltaAngle/2;
@@ -18,10 +18,11 @@ public class Odometry {
             h = dC;
         }
 
-        double deltaX = (dC * Math.cos(alpha + prevPos[2])) + (dS * Math.sin(alpha + prevPos[2]));
-        double deltaY = (dC * Math.sin(alpha + prevPos[2])) + (dS * Math.cos(alpha + prevPos[2]));
+        //swap deltaX and deltaY calculation for front-facing chassis
+        double deltaY = (dC * Math.cos(alpha + prevPos[2])) + (dS * Math.sin(alpha + prevPos[2]));
+        double deltaX = (dC * Math.sin(alpha + prevPos[2])) + (dS * Math.cos(alpha + prevPos[2]));
 
-        double[] newPos = {prevPos[0] + deltaX, prevPos[1] + deltaY, prevPos[2] + deltaAngle};
+        double[] newPos = {prevPos[0] + deltaX, prevPos[1] + deltaY, prevPos[2] - deltaAngle};
 
         return newPos;
     }
@@ -52,16 +53,19 @@ public class Odometry {
 
         if(Math.abs(turn) >= (Math.PI/36) && cooldown == 0 && howFar >= 10) {
             //turn until facing target at 5° precision
+
+            //smoothen out rotation velocity
             if(firstATT == 0){
                 firstATT = turn;
             }
             double progress = turn/firstATT;
             double p = Range.clip(full(progress, 0, 1, 1, 0), 0.2, 0.6);
+
             if(turn > 0) {
-                return new double[]{-p, -p, p, p};
+                return new double[]{p, -p, p, -p};//lF, lB, rF, rB
             }
             if(turn < 0){
-                return new double[]{p, p, -p, -p};
+                return new double[]{-p, p, -p, p};
             }
         } else if(howFar > 3 && Math.abs(turn) < (Math.PI/36)) { //tweak howFar
             //go towards target until within 3cm
@@ -72,21 +76,24 @@ public class Odometry {
             if(firstHF == 0){
                 firstHF = howFar;
             }
+            //smoothen acceleration for full power
             double progress = howFar/firstHF;
             double p = Range.clip(full(progress, 0, 1, 1, 0.2), 0.2, 0.8);
+            //smoothen acceleration for angle correction mid-drive
             //double k = easy(turn/(Math.PI/20), 0, 1, 1)/10*p;
             double k = 0;
+            //add k to returns
             if(turn > 0) {
-                return new double[]{-p+k, p-k, p, -p};
+                return new double[]{p, -p, -p, p};//lF, lB, rF, rB
             }
             if(turn < 0){
-                return new double[]{-p, p, p-k, -p+k};
+                return new double[]{p, -p, -p, p};
             }
             if(turn == 0){
-                return new double[]{-p, p, p, -p};
+                return new double[]{p, -p, -p, p};
             }
         } else {
-            //if robot is within 10cm of target and aiming more than 5° away, turn
+            //if robot is within 10cm of target and facing more than 5° away, turn
             finalStage = true;
             double finalTurn = nowAngle - targetAngle;
             if (firstFT == 0){
@@ -105,10 +112,10 @@ public class Odometry {
                 cooldown = 0;
             }
             if(finalTurn > 0) {
-                return new double[]{-p, -p, p, p};
+                return new double[]{p, -p, p, -p};
             }
             if(finalTurn < 0){
-                return new double[]{p, p, -p, -p};
+                return new double[]{-p, p, -p, p};
             }
         }
         return power;

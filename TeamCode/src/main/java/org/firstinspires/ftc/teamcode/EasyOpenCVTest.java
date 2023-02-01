@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -44,6 +46,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 @TeleOp
 public class EasyOpenCVTest extends LinearOpMode {
     OpenCvCamera phoneCam;
+    TestPipeline pipeline;
 
     @Override
     public void runOpMode() {
@@ -55,9 +58,9 @@ public class EasyOpenCVTest extends LinearOpMode {
          * the RC phone). If no camera monitor is desired, use the alternate
          * single-parameter constructor instead (commented out below)
          */
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
-
         // OR...  Do Not Activate the Camera Monitor View
         //phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK);
 
@@ -66,7 +69,8 @@ public class EasyOpenCVTest extends LinearOpMode {
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        phoneCam.setPipeline(new TestPipeline());
+        pipeline = new TestPipeline();
+        phoneCam.setPipeline(pipeline);
 
         /*
          * Open the connection to the camera device. New in v1.4.0 is the ability
@@ -91,7 +95,7 @@ public class EasyOpenCVTest extends LinearOpMode {
                  * For a rear facing camera or a webcam, rotation is defined assuming the camera is facing
                  * away from the user.
                  */
-                phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                phoneCam.startStreaming(320, 240, OpenCvCameraRotation.SIDEWAYS_LEFT);
             }
 
             @Override
@@ -116,7 +120,9 @@ public class EasyOpenCVTest extends LinearOpMode {
             /*
              * Send some stats to the telemetry
              */
-            telemetry.addData("Frame Count", phoneCam.getFrameCount());
+            telemetry.addData("ConeColour", pipeline.analyze());
+
+            telemetry.addData("\nFrame Count", phoneCam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", phoneCam.getFps()));
             telemetry.addData("Total frame time ms", phoneCam.getTotalFrameTimeMs());
             telemetry.addData("Pipeline time ms", phoneCam.getPipelineTimeMs());
@@ -155,10 +161,78 @@ public class EasyOpenCVTest extends LinearOpMode {
          */
     }
 
-    class TestPipeline extends OpenCvPipeline {
+    public static class TestPipeline extends OpenCvPipeline{
+
+        public enum ConeColour{
+            YELLOW,
+            GREEN,
+            PURPLE
+        }
+
+        Point topLeftAnchor = new Point(0, 0);
+        Point botRightAnchor = new Point(0, 0);
+
+        Mat regionCb;
+        //Mat YCrCb = new Mat();
+        //Mat Cb = new Mat();
+        Scalar avg;
+        boolean end = false;
+
+        private volatile ConeColour colour;
+
+        /*void inputToCb(Mat input) {
+            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Core.extractChannel(YCrCb, Cb, 2);
+        }*/
+
         @Override
-        public Mat processFrame(Mat input) {
+        public void init(Mat firstFrame){
+            //inputToCb(firstFrame);
+        }
+
+        @Override
+        public Mat processFrame(Mat input){
+            //inputToCb(input);
+
+            for (int i = 240; i > 0; i--) {
+                int counter = 0;
+                for (int j = 320; j > 0; j--) {
+                    /*!!!possible error - some rgb values are null - results in null pointer exception!!!*/
+                    double[] rgb = input.get(i, j);
+                    if (rgb[0] > 120 && rgb[1] < 20 && rgb[2] < 20) {
+                        counter++;
+                    } else {
+                        if (counter > 20) {
+                            botRightAnchor = new Point(i, j - 3 * counter / 4);
+                            topLeftAnchor = new Point(4 * i / 3, j - counter / 4);
+                            end = true;
+                            break;
+                        }
+                        counter = 0;
+                    }
+                }
+                if(end){break;}
+            }
+
+            Imgproc.rectangle(input, topLeftAnchor, botRightAnchor, new Scalar(255,0,0), 2);
+            regionCb = input.submat(new Rect(topLeftAnchor, botRightAnchor));
+            avg = Core.mean(regionCb);
+
+            if((int)avg.val[0] > 200 && (int)avg.val[1] > 200 && (int)avg.val[2] < 120) {
+                colour = ConeColour.YELLOW;
+            }else if((int)avg.val[0] < 220 && (int)avg.val[1] > 220 && (int)avg.val[2] < 220){
+                colour = ConeColour.GREEN;
+            }else{
+                colour = ConeColour.PURPLE;
+            }
+
+            Imgproc.rectangle(input, topLeftAnchor, botRightAnchor, avg, -1);
+
             return input;
+        }
+
+        public ConeColour analyze(){
+            return colour;
         }
     }
 }
