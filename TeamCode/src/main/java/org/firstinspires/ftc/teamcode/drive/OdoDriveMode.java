@@ -105,7 +105,7 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
             //update target angle
-            targetRot = getTargetAngle();
+            targetRot = getTargetAngle(targetRot);
 
             if(true){    //gamepad1.left_stick_x != 0 || gamepad1.left_stick_y != 0) {
                 if(fieldRelative){
@@ -356,9 +356,9 @@ public class OdoDriveMode extends LinearOpMode{
         robot.leftBack.setPower(Range.clip(lBrF - turn, -1.0, 1.0));
     }
 
-    private double getTargetAngle(){ //update target angle with right stick input
+    private double getTargetAngle(double targetAngle){ //update target angle with right stick input
         double turnCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
-        return gamepad1.right_stick_x * turnCoe;
+        return targetAngle + 0.1 * gamepad1.right_stick_x * turnCoe;
     }
 
     private double[] getPos(){ //update position using odometry
