@@ -44,6 +44,7 @@ public class OdoDriveMode extends LinearOpMode{
         double[] power;
 
         double targetRot = 0;
+        boolean rotating = false;
 
         boolean fieldRelative = true;
 
@@ -106,6 +107,16 @@ public class OdoDriveMode extends LinearOpMode{
 
             //update target angle
             targetRot = getTargetAngle(targetRot);
+
+            if (!rotating){
+                //if not rotating, check if rotating started
+                rotating = Math.abs(gamepad1.right_stick_x) > 0.2
+
+            }else if(Math.abs(gamepad1.right_stick_x) < 0.1){
+                //if rotating, stop rotating if input ended, set targetRot to currentRot to stop imedeatly
+                targetRot = currPos[2];
+                rotating = false;
+            }
 
             if(true){    //gamepad1.left_stick_x != 0 || gamepad1.left_stick_y != 0) {
                 if(fieldRelative){
@@ -347,7 +358,7 @@ public class OdoDriveMode extends LinearOpMode{
     private void driveTA(double lFrB, double lBrF, double rotDif){ //drive function with targetAngle Adjustment
 
         //use difference between target angle and odometry read angle to adjust turn
-        double turn = Range.clip(rotDif, -1.0, 1.0);
+        double turn = Math.pow(Range.clip(rotDif, -1.0, 1.0),0.7); //power to 0.7 to decrease amount of smoothing
 
         robot.leftFront.setPower(Range.clip(lFrB - turn, -1.0, 1.0));
         robot.rightBack.setPower(Range.clip(lFrB + turn, -1.0, 1.0));
