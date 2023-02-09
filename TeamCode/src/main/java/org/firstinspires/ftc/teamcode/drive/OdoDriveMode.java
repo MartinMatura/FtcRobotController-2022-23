@@ -43,6 +43,8 @@ public class OdoDriveMode extends LinearOpMode{
         double[] currPos;
         double[] power;
 
+        double targetRot = 0;
+
         boolean fieldRelative = true;
 
         while(opModeIsActive()) {
@@ -102,6 +104,9 @@ public class OdoDriveMode extends LinearOpMode{
                 robot.lift.setPower((Math.abs(liftPos - robot.lift.getTargetPosition())/(liftPos - robot.lift.getTargetPosition())) * 0.5);
             }
 
+            //update target angle
+            targetRot = getTargetAngle();
+
             if(true){    //gamepad1.left_stick_x != 0 || gamepad1.left_stick_y != 0) {
                 if(fieldRelative){
                     x = gamepad1.left_stick_x;
@@ -112,7 +117,9 @@ public class OdoDriveMode extends LinearOpMode{
                     y = -gamepad1.left_stick_x;
                     power = calcPowerRR(x, y);
                 }
-                drive(power[0], power[1]);
+                double rotDif = targetRot - currPos[2];
+                driveTA(power[0], power[1], rotDif);
+                //drive(power[0], power[1]);
                 currPos = getPos();
             }
 
@@ -335,6 +342,23 @@ public class OdoDriveMode extends LinearOpMode{
 
         robot.rightFront.setPower(Range.clip(lBrF + turn, -1.0, 1.0));
         robot.leftBack.setPower(Range.clip(lBrF - turn, -1.0, 1.0));
+    }
+
+    private void driveTA(double lFrB, double lBrF, double rotDif){ //drive function with targetAngle Adjustment
+
+        //use difference between target angle and odometry read angle to adjust turn
+        double turn = Range.clip(rotDif, -1.0, 1.0);
+
+        robot.leftFront.setPower(Range.clip(lFrB - turn, -1.0, 1.0));
+        robot.rightBack.setPower(Range.clip(lFrB + turn, -1.0, 1.0));
+
+        robot.rightFront.setPower(Range.clip(lBrF + turn, -1.0, 1.0));
+        robot.leftBack.setPower(Range.clip(lBrF - turn, -1.0, 1.0));
+    }
+
+    private double getTargetAngle(){ //update target angle with right stick input
+        double turnCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
+        return gamepad1.right_stick_x * turnCoe;
     }
 
     private double[] getPos(){ //update position using odometry
