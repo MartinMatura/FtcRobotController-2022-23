@@ -45,6 +45,7 @@ public class OdoDriveMode extends LinearOpMode{
 
         double targetRot = 0;
         boolean rotating = false;
+        double rotatingEndTime = 0;
 
         boolean fieldRelative = true;
 
@@ -112,9 +113,16 @@ public class OdoDriveMode extends LinearOpMode{
                 //if not rotating, check if rotating started
                 rotating = Math.abs(gamepad1.right_stick_x) > 0.2;
 
-            }else if(Math.abs(gamepad1.right_stick_x) < 0.1){
-                //if rotating, stop rotating if input ended, set targetRot to currentRot to stop imedeatly
+            }else if(rotatingEndTime == 0 && Math.abs(gamepad1.right_stick_x) < 0.1){
+                //if rotating, and input ended, set time for when rotating will end
+                rotatingEndTime = runtime.time() + 0.2; //delay
+                rotating = false;
+            }
+
+            if(rotatingEndTime != 0 && rotatingEndTime <= runtime.time()){
+                //if rotating end time reached, set the target rot to current rot
                 targetRot = currPos[2];
+                rotatingEndTime = 0;
                 rotating = false;
             }
 
