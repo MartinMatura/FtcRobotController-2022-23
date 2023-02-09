@@ -296,9 +296,10 @@ public class OdoDriveMode extends LinearOpMode{
 
         double speedCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
 
-        double rotX = x * Math.cos(currPos[2]) - y * Math.sin(currPos[2]);
-        double rotY = x * Math.sin(currPos[2]) + y * Math.cos(currPos[2]);
+        double rotX = x * Math.cos(currPos[2]) - y * Math.sin(-currPos[2]);
+        double rotY = y * Math.cos(currPos[2]) + x * Math.sin(-currPos[2]);
 
+        telemetry.addData("rot",currPos[2]);
         telemetry.addData("x", x);
         telemetry.addData("y", y);
         telemetry.addData("position", Arrays.toString(currPos));
