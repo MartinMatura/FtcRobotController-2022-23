@@ -1,10 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.Range;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -12,6 +18,8 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera2;
 import org.openftc.easyopencv.OpenCvPipeline;
+
+import java.util.Objects;
 
 /*
  * Copyright (c) 2020 OpenFTC Team
@@ -41,8 +49,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
  * Android Camera2 API
  */
 
-@TeleOp
-public class EasyOpenCVTest extends LinearOpMode {
+@Autonomous
+public class ConeDetectionTest2 extends LinearOpMode {
     OpenCvCamera phoneCam;
 
     @Override
@@ -66,7 +74,7 @@ public class EasyOpenCVTest extends LinearOpMode {
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        phoneCam.setPipeline(new TestPipeline());
+        phoneCam.setPipeline(new ConeDetect());
 
         /*
          * Open the connection to the camera device. New in v1.4.0 is the ability
@@ -116,6 +124,14 @@ public class EasyOpenCVTest extends LinearOpMode {
             /*
              * Send some stats to the telemetry
              */
+            telemetry.addData("red", ConeDetect.r());
+            telemetry.addData("green", ConeDetect.g());
+            telemetry.addData("blue", ConeDetect.b());
+            telemetry.addData("counter", ConeDetect.counter());
+            telemetry.addData("cone colour", ConeDetect.analyze());
+            telemetry.addData("row", ConeDetect.row());
+            telemetry.addData("column", ConeDetect.column());
+
             telemetry.addData("Frame Count", phoneCam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", phoneCam.getFps()));
             telemetry.addData("Total frame time ms", phoneCam.getTotalFrameTimeMs());
@@ -149,60 +165,115 @@ public class EasyOpenCVTest extends LinearOpMode {
 
     }
 
-    class TestPipeline extends OpenCvPipeline {
+    static class ConeDetect extends OpenCvPipeline {
 
-        public int detectObject(Mat in){
-            return 1;
-        }
+        static int colour; //0=red, 1=green, 2=blue
 
-        private double[][] matToArray(Mat input){
-            double[][] result = new double[input.height()][input.width()];
-            int imgWidth = input.width();
-            int imgHeight = input.height();
-//            for(int section = 0; section < 3; section++){
-            for(int r = 0; r < imgHeight; r++){
-                Mat row = input.row(r);
-                //                int width = (imgWidth / 3) * section;
-                int width = row.width();
-                for(int c = 0; c < width; c++){
-                    result[r][c] = input.get(r, c)[0];
-                }
-            }
-//            }
-            return result;
-        }
+        Point topRightAnchor = new Point(190, 235);
+        Point botLeftAnchor = new Point(120, 200);
 
-        private double calculateCorrelation(double[][] img, int color){
-            double[] diffs = new double[img.length * img[1].length];
-            for(int r = 0; r < img.length; r++){
-                double[] row = img[r];
-                for(int c = 0; c < row.length; c++){
-                    double pixel = row[c];
-                    double diff = Math.abs(color - pixel);
-                    diffs[img[1].length * r + c] = diff;
-                }
-            }
-            double total = 0;
-            for (double diff : diffs) {
-                total += diff;
-            }
-            double avg = total / diffs.length;
-            return avg / 255;
-        }
+        Mat region;
+        //Mat YCrCb = new Mat();
+        //Mat Cb = new Mat();
+        Scalar avg;
+        boolean end = false;
+
+        static double r;
+        static double g;
+        static double b;
+        static int counter;
+        static int i;
+        static int j;
+
+        /*void inputToCb(Mat input) {
+            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Core.extractChannel(YCrCb, Cb, 2);
+        }*/
+
+        /*@Override
+        public void init(Mat firstFrame){
+            inputToCb(firstFrame);
+        }*/
 
         @Override
         public Mat processFrame(Mat input) {
-            int color = 0x0d9c9a;
-            double[][] img = matToArray(input);
-            double cor = calculateCorrelation(img, color);
-            String text = String.format("Avg. correlation: %f", cor);
-            Point position = new Point(170, 280);
-            Scalar textColor = new Scalar(0, 0, 255);
-            int font = Imgproc.FONT_HERSHEY_SIMPLEX;
-            int scale = 1;
-            int thickness = 3;
-            Imgproc.putText(input, text, position, font, scale, textColor, thickness);
-            return input;
+            //inputToCb(input);
+
+            /*r = input.get(input.height()/2, input.width()/2)[0];
+            g = input.get(input.height()/2, input.width()/2)[1];
+            b = input.get(input.height()/2, input.width()/2)[2];*/
+
+            if (!input.empty()) {
+                /*for (i = 1; i < input.height(); i++) { //i is row (y coord), j is column (x coord)
+                    for (j = 1; j < input.width(); j++) {
+                        r = input.get(i, j)[0];
+                        g = input.get(i, j)[1];
+                        b = input.get(i, j)[2];
+                        double avg = (r + g + b) / 3;
+                        if (r > avg * 1.5) {
+                            counter++;
+                        } else if (counter > 40) {
+                            botLeftAnchor = new Point(i, Range.clip(Math.floor(j - 3.0 * counter / 4.0), 0, input.height()));
+                            topRightAnchor = new Point(Range.clip(Math.floor(i + 4.5 * counter / 4.0), 0, input.width()), Range.clip(Math.floor(j - counter / 4.0), 0, input.height()));
+                            end = true;
+                        }
+                        Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, new Scalar(0, 0, 255), 2);
+                        if (end) {
+                            break;
+                        }
+                    }
+                    counter = 0;
+                    if (end) {
+                        end = false;
+                        break;
+                    }
+                }*/
+
+                region = input.submat(new Rect(topRightAnchor, botLeftAnchor));
+                avg = Core.mean(region);
+
+                if (avg.val[0] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
+                    colour = 0;
+                    Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);
+                } else if (avg.val[1] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
+                    colour = 1;
+                    Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);
+                } else if (avg.val[3] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
+                    colour = 2;
+                    Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);
+                }
+
+                return input;
+            }
+            return null;
+        }
+
+        public static int analyze(){
+            return colour;
+        }
+
+        public static double r(){
+            return r;
+        }
+
+        public static double g(){
+            return g;
+        }
+
+        public static double b(){
+            return b;
+        }
+
+        public static int counter(){
+            return counter;
+        }
+
+        public static int row(){
+            return i;
+        }
+
+        public static int column(){
+            return j;
         }
     }
 }

@@ -43,45 +43,75 @@ public class OdoDriveMode extends LinearOpMode{
         double[] currPos;
         double[] power;
 
+        boolean fieldRelative = true;
+
         while(opModeIsActive()) {
-            telemetry.addData("lift position", robot.lift.getCurrentPosition());
-            telemetry.update();
 
             double x = 0;
             double y = 0;
             currPos = getPos();
 
+            if(gamepad2.x){
+                robot.grabber.setPosition(1);
+            }
+
+            if(gamepad2.y){
+                robot.grabber.setPosition(0.4);
+            }
+
+            if(gamepad2.right_bumper){
+                robot.grabber.setPosition(0.5);
+            }
+
+            if(gamepad2.a){
+                robot.spinner.setPosition(1);
+            }
+
+            if(gamepad2.b){
+                robot.spinner.setPosition(0);
+            }
+
             if(gamepad2.dpad_up){
-                robot.lift.setTargetPosition(-800);
+                robot.lift.setTargetPosition(-1100);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             if(gamepad2.dpad_down){
-                robot.lift.setTargetPosition(-50);
+                robot.lift.setTargetPosition(-350);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             if(gamepad2.dpad_left){
-                robot.lift.setTargetPosition(-400);
+                robot.lift.setTargetPosition(-300);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             if(gamepad2.dpad_right){
-                robot.lift.setTargetPosition(-200);
+                robot.lift.setTargetPosition(-700);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
-            if(gamepad2.right_bumper){
-                robot.lift.setTargetPosition(0);
+            if(gamepad2.left_bumper){
+                robot.lift.setTargetPosition(-200);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+
+            if(gamepad1.right_bumper){
+                fieldRelative = !fieldRelative;
             }
 
             double liftPos = robot.lift.getCurrentPosition();
             if(robot.lift.getCurrentPosition() != robot.lift.getTargetPosition()) {
-                robot.lift.setPower((Math.abs(liftPos - robot.lift.getTargetPosition()) / (liftPos - robot.lift.getTargetPosition())) * 0.5);
+                robot.lift.setPower((Math.abs(liftPos - robot.lift.getTargetPosition())/(liftPos - robot.lift.getTargetPosition())) * 0.5);
             }
 
             if(gamepad1.left_stick_x != 0 || gamepad1.left_stick_y != 0) {
-                x = gamepad1.left_stick_x;
-                y = gamepad1.left_stick_y;
-                power = calcPower(x, y, currPos);
+                if(fieldRelative){
+                    x = gamepad1.left_stick_x;
+                    y = gamepad1.left_stick_y;
+                    power = calcPowerFR(x, y, currPos);
+                } else{
+                    x = gamepad1.left_stick_y;
+                    y = -gamepad1.left_stick_x;
+                    power = calcPowerRR(x, y);
+                }
                 drive(power[0], power[1]);
                 currPos = getPos();
             }
@@ -103,7 +133,7 @@ public class OdoDriveMode extends LinearOpMode{
                 lastInput = 4;
             }
 
-            if (!path.isEmpty()){
+            if(!path.isEmpty()){
                 if(path.get(0)[1] > currPos[1] + 30){
                     double startY = currPos[1];
                     double endY = path.get(0)[1];
@@ -115,7 +145,7 @@ public class OdoDriveMode extends LinearOpMode{
                         telemetry.addData("end",endY);
                         telemetry.update();
                         y = -1;
-                        power = calcPower(x, y, currPos);
+                        power = calcPowerFR(x, y, currPos);
                         drive(power[0], power[1]);
                         currPos = getPos();
 
@@ -148,7 +178,7 @@ public class OdoDriveMode extends LinearOpMode{
                         telemetry.addData("end",endY);
                         telemetry.update();
                         y = 1;
-                        power = calcPower(x, y, currPos);
+                        power = calcPowerFR(x, y, currPos);
                         drive(power[0], power[1]);
                         currPos = getPos();
 
@@ -181,7 +211,7 @@ public class OdoDriveMode extends LinearOpMode{
                         telemetry.addData("end",endX);
                         telemetry.update();
                         x = 1;
-                        power = calcPower(x, y, currPos);
+                        power = calcPowerFR(x, y, currPos);
                         drive(power[0], power[1]);
                         currPos = getPos();
 
@@ -214,7 +244,7 @@ public class OdoDriveMode extends LinearOpMode{
                         telemetry.addData("end",endX);
                         telemetry.update();
                         x = -1;
-                        power = calcPower(x, y, currPos);
+                        power = calcPowerFR(x, y, currPos);
                         drive(power[0], power[1]);
                         currPos = getPos();
 
@@ -239,7 +269,6 @@ public class OdoDriveMode extends LinearOpMode{
                 }
             }
 
-
             if (gamepad1.a){
                 robot.leftFront.setPower(0);
                 robot.rightBack.setPower(0);
@@ -247,12 +276,9 @@ public class OdoDriveMode extends LinearOpMode{
                 robot.leftBack.setPower(0);
                 break;
             }
-
-            power = calcPower(x, y, currPos);
-            drive(power[0], power[1]);
         }
-
     }
+
     private void resetRight(){
         robot.encR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
@@ -262,10 +288,11 @@ public class OdoDriveMode extends LinearOpMode{
     private void resetSide(){
         robot.encS.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
-    private void resetLift() {robot.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    private void resetLift() {
+        robot.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
-    private double[] calcPower(double x, double y, double[] currPos){
+    private double[] calcPowerFR(double x, double y, double[] currPos){
 
         double speedCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
 
@@ -283,6 +310,19 @@ public class OdoDriveMode extends LinearOpMode{
         double[] power = {lFrBpower, lBrFpower};
 
         return power;
+    }
+
+    private double[] calcPowerRR(double x, double y){
+        double speedCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
+
+        telemetry.addData("x", x);
+        telemetry.addData("y", y);
+        telemetry.update();
+
+        double lFrBpower = Range.clip((y - x) * speedCoe, -1.0, 1.0);
+        double lBrFpower = Range.clip((y + x) * speedCoe, -1.0, 1.0);
+
+        return new double[]{lFrBpower, lBrFpower};
     }
 
     private void drive(double lFrB, double lBrF){

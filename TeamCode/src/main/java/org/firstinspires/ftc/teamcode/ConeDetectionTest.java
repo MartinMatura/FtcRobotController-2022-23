@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -42,8 +44,9 @@ import org.openftc.easyopencv.OpenCvPipeline;
  */
 
 @TeleOp
-public class EasyOpenCVTest extends LinearOpMode {
+public class ConeDetectionTest extends LinearOpMode {
     OpenCvCamera phoneCam;
+    //Pipeline pipeline;
 
     @Override
     public void runOpMode() {
@@ -55,9 +58,9 @@ public class EasyOpenCVTest extends LinearOpMode {
          * the RC phone). If no camera monitor is desired, use the alternate
          * single-parameter constructor instead (commented out below)
          */
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
-
         // OR...  Do Not Activate the Camera Monitor View
         //phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK);
 
@@ -66,7 +69,8 @@ public class EasyOpenCVTest extends LinearOpMode {
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        phoneCam.setPipeline(new TestPipeline());
+        //pipeline = new Pipeline();
+        phoneCam.setPipeline(new Pipeline());
 
         /*
          * Open the connection to the camera device. New in v1.4.0 is the ability
@@ -116,7 +120,9 @@ public class EasyOpenCVTest extends LinearOpMode {
             /*
              * Send some stats to the telemetry
              */
-            telemetry.addData("Frame Count", phoneCam.getFrameCount());
+            //telemetry.addData("ConeColour", Pipeline.analyze());
+
+            telemetry.addData("\nFrame Count", phoneCam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", phoneCam.getFps()));
             telemetry.addData("Total frame time ms", phoneCam.getTotalFrameTimeMs());
             telemetry.addData("Pipeline time ms", phoneCam.getPipelineTimeMs());
@@ -146,63 +152,74 @@ public class EasyOpenCVTest extends LinearOpMode {
          * if you're doing something weird where you do need it synchronized with your OpMode thread,
          * then you will need to account for that accordingly.
          */
-
     }
 
-    class TestPipeline extends OpenCvPipeline {
+    public class Pipeline extends OpenCvPipeline{
 
-        public int detectObject(Mat in){
-            return 1;
-        }
+        int colour; //0=yellow, 1=green, 2=purple
 
-        private double[][] matToArray(Mat input){
-            double[][] result = new double[input.height()][input.width()];
-            int imgWidth = input.width();
-            int imgHeight = input.height();
-//            for(int section = 0; section < 3; section++){
-            for(int r = 0; r < imgHeight; r++){
-                Mat row = input.row(r);
-                //                int width = (imgWidth / 3) * section;
-                int width = row.width();
-                for(int c = 0; c < width; c++){
-                    result[r][c] = input.get(r, c)[0];
-                }
-            }
-//            }
-            return result;
-        }
+        Point topLeftAnchor = new Point(0, 0);
+        Point botRightAnchor = new Point(0, 0);
 
-        private double calculateCorrelation(double[][] img, int color){
-            double[] diffs = new double[img.length * img[1].length];
-            for(int r = 0; r < img.length; r++){
-                double[] row = img[r];
-                for(int c = 0; c < row.length; c++){
-                    double pixel = row[c];
-                    double diff = Math.abs(color - pixel);
-                    diffs[img[1].length * r + c] = diff;
-                }
-            }
-            double total = 0;
-            for (double diff : diffs) {
-                total += diff;
-            }
-            double avg = total / diffs.length;
-            return avg / 255;
-        }
+        Mat regionCb;
+        //Mat YCrCb = new Mat();
+        //Mat Cb = new Mat();
+        Scalar avg;
+        boolean end = false;
+
+        /*void inputToCb(Mat input) {
+            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+            Core.extractChannel(YCrCb, Cb, 2);
+        }*/
+
+        /*@Override
+        public void init(Mat firstFrame){
+            //inputToCb(firstFrame);
+        }*/
 
         @Override
-        public Mat processFrame(Mat input) {
-            int color = 0x0d9c9a;
-            double[][] img = matToArray(input);
-            double cor = calculateCorrelation(img, color);
-            String text = String.format("Avg. correlation: %f", cor);
-            Point position = new Point(170, 280);
-            Scalar textColor = new Scalar(0, 0, 255);
-            int font = Imgproc.FONT_HERSHEY_SIMPLEX;
-            int scale = 1;
-            int thickness = 3;
-            Imgproc.putText(input, text, position, font, scale, textColor, thickness);
+        public Mat processFrame(Mat input){
+            //inputToCb(input);
+
+            for (int i = 240; i > 0; i--) {
+                int counter = 0;
+                for (int j = 320; j > 0; j--) {
+                    /*!!!possible error - some rgb values are null - results in null pointer exception!!!*/
+                    double[] rgb = input.get(i, j);
+                    if (rgb[0] > 120 && rgb[1] < 20 && rgb[2] < 20) {
+                        counter++;
+                    } else {
+                        if (counter > 20) {
+                            botRightAnchor = new Point(i, j - 3 * counter / 4);
+                            topLeftAnchor = new Point(4 * i / 3, j - counter / 4);
+                            end = true;
+                            break;
+                        }
+                        counter = 0;
+                    }
+                }
+                if(end){break;}
+            }
+
+            Imgproc.rectangle(input, topLeftAnchor, botRightAnchor, new Scalar(255,0,0), 2);
+            regionCb = input.submat(new Rect(topLeftAnchor, botRightAnchor));
+            avg = Core.mean(regionCb);
+
+            if((int)avg.val[0] > 200 && (int)avg.val[1] > 200 && (int)avg.val[2] < 120) {
+                colour = 0;
+            }else if((int)avg.val[0] < 220 && (int)avg.val[1] > 220 && (int)avg.val[2] < 220){
+                colour = 1;
+            }else{
+                colour = 2;
+            }
+
+            Imgproc.rectangle(input, topLeftAnchor, botRightAnchor, avg, -1);
+
             return input;
+        }
+
+        public int analyze(){
+            return colour;
         }
     }
 }
