@@ -102,7 +102,7 @@ public class OdoDriveMode extends LinearOpMode{
                 robot.lift.setPower((Math.abs(liftPos - robot.lift.getTargetPosition())/(liftPos - robot.lift.getTargetPosition())) * 0.5);
             }
 
-            if(gamepad1.left_stick_x != 0 || gamepad1.left_stick_y != 0) {
+            if(true){    //gamepad1.left_stick_x != 0 || gamepad1.left_stick_y != 0) {
                 if(fieldRelative){
                     x = gamepad1.left_stick_x;
                     y = gamepad1.left_stick_y;
