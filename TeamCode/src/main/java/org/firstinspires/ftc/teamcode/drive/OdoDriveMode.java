@@ -37,7 +37,7 @@ public class OdoDriveMode extends LinearOpMode{
 
         robot.lift.setTargetPosition(0);
 
-        List<double[]> path = new ArrayList<>();
+        List<double[]> path = new ArrayList<>(); //to log path created by dpad inputs
         int lastInput = 0;
 
         double[] currPos;
@@ -133,7 +133,7 @@ public class OdoDriveMode extends LinearOpMode{
                 lastInput = 4;
             }
 
-            if(!path.isEmpty()){
+            if(!path.isEmpty()){ //drive to target points based on dpad input
                 if(path.get(0)[1] > currPos[1] + 30){
                     double startY = currPos[1];
                     double endY = path.get(0)[1];
@@ -149,7 +149,7 @@ public class OdoDriveMode extends LinearOpMode{
                         drive(power[0], power[1]);
                         currPos = getPos();
 
-                        if(gamepad1.dpad_up){
+                        if(gamepad1.dpad_up){//listen for other dpad inputs while running the while loop
                             path = dpadUp(path, currPos, lastInput);
                             lastInput = 1;
                         }
@@ -279,7 +279,7 @@ public class OdoDriveMode extends LinearOpMode{
         }
     }
 
-    private void resetRight(){
+    private void resetRight(){ //reset encoders to 0 before start
         robot.encR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
     private void resetLeft(){
@@ -292,7 +292,7 @@ public class OdoDriveMode extends LinearOpMode{
         robot.lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
-    private double[] calcPowerFR(double x, double y, double[] currPos){
+    private double[] calcPowerFR(double x, double y, double[] currPos){ //field relative
 
         double speedCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
 
@@ -312,7 +312,7 @@ public class OdoDriveMode extends LinearOpMode{
         return power;
     }
 
-    private double[] calcPowerRR(double x, double y){
+    private double[] calcPowerRR(double x, double y){ //robot relative
         double speedCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
 
         telemetry.addData("x", x);
@@ -325,7 +325,7 @@ public class OdoDriveMode extends LinearOpMode{
         return new double[]{lFrBpower, lBrFpower};
     }
 
-    private void drive(double lFrB, double lBrF){
+    private void drive(double lFrB, double lBrF){//give power to motors
         double turnCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
         double turn = gamepad1.right_stick_x * turnCoe;
 
@@ -336,7 +336,7 @@ public class OdoDriveMode extends LinearOpMode{
         robot.leftBack.setPower(Range.clip(lBrF - turn, -1.0, 1.0));
     }
 
-    private double[] getPos(){
+    private double[] getPos(){ //update position using odometry
         double     countsPerMotorRev   = 8192 ;    // eg: TETRIX Motor Encoder
         double     wheelDiameterCm     = 6.0 ;     // For figuring circumference
         double     countsPerCm         = (countsPerMotorRev / (wheelDiameterCm * Math.PI));
@@ -369,7 +369,7 @@ public class OdoDriveMode extends LinearOpMode{
         return currPos;
     }
 
-    private List<double[]> dpadUp(List<double[]> path, double[] currPos, int lastInput){
+    private List<double[]> dpadUp(List<double[]> path, double[] currPos, int lastInput){ //add new target point to path based on dpad input
         double startY = currPos[1];
         double endY = startY - startY % 61 + 61;
         if(path.size() == 0){

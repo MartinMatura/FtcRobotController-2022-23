@@ -39,6 +39,7 @@ public class AutonomousCamDetTest extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        //init camera
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
         phoneCam.setPipeline(new ConeDetect());
@@ -90,11 +91,11 @@ public class AutonomousCamDetTest extends LinearOpMode {
         resetSide();
 
         while(opModeIsActive()){
-            if(scan){
+            if(scan){//scan avg colour of cone 5 times at the beginning of auto
                 for (int i = 0; i < 5; i++){
                     double[] result = ConeDetect.analyze();
                     double avg = result[0] + result [1] + result[2] / 3 * 1.1;
-                    if (result[0] > avg) {
+                    if (result[0] > avg) {//add +1 to r, g or b depending on detected avg colour
                         r++;
                     } else if (result[1] > avg) {
                         g++;
@@ -121,6 +122,7 @@ public class AutonomousCamDetTest extends LinearOpMode {
                             {-100, -50, -90},
                             {-50, 0, 0}};
                 }
+                scan = false;
             }
 
             startTime = System.nanoTime();

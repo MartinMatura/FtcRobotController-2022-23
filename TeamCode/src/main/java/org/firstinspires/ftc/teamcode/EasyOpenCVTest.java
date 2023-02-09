@@ -13,6 +13,10 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera2;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+//TEST MODE, DOESNT DO CONE DETECTION
+
+
+
 /*
  * Copyright (c) 2020 OpenFTC Team
  *

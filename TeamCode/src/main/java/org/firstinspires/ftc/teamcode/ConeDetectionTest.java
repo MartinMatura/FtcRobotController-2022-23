@@ -15,6 +15,9 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera2;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+//!!!!!!!!!!!!!!!!!DONT USE, OLD VERSION!!!!!!!!!!!!!!!!!!!!, ConeDetectionTest2 instead
+
+
 /*
  * Copyright (c) 2020 OpenFTC Team
  *

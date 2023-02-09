@@ -76,7 +76,7 @@ public class AutonomousSplineTest extends LinearOpMode {
                 splinePointCounter++;
             }
 
-            double[] power = odometry.calcS(targetX,targetY, nextX, nextY, currentPos[0],currentPos[1],currentPos[2]);
+            double[] power = odometry.calcS(targetX,targetY, nextX, nextY, currentPos[0],currentPos[1],currentPos[2]);//uses different method of traveling between points (turns along the way)
 
             robot.leftFront.setPower(power[0]);
             robot.leftBack.setPower(power[1]);

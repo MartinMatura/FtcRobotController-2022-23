@@ -36,7 +36,7 @@ public class AutonomousTest extends LinearOpMode {
                                   {100, 50, 0},
                                   {100, 50, 90},
                                   {50, 0, 0} }; //array of points we set for the robot as its path
-        int targetCounter = 0;
+        int targetCounter = 0;//tracks which point in the array is the next target, increased every time a target point is reached by 1
 
         double[] currentPos= {0,0,0};
 
@@ -52,9 +52,9 @@ public class AutonomousTest extends LinearOpMode {
         double start, stop;
 
         while(opModeIsActive()){
-            start = System.nanoTime();
+            start = System.nanoTime();//only to track speed of odometry update
 
-            rPrevPos = rCurrPos;
+            rPrevPos = rCurrPos;//calculate distance traveled by each odo wheel
             rCurrPos = robot.encR.getCurrentPosition();
             double dR = (rCurrPos - rPrevPos)/countsPerCm;
 
@@ -68,19 +68,20 @@ public class AutonomousTest extends LinearOpMode {
 
             stop = System.nanoTime();
 
-            currentPos = odometry.nowPos(currentPos, dR, dL, dS);
+            currentPos = odometry.nowPos(currentPos, dR, dL, dS);//calculate current position based on distance travelled by each odo wheel
 
-            if(odometry.distanceCheck(currentPos[0], currentPos[1], currentPos[2], targetPoints[targetCounter][0], targetPoints[targetCounter][1])){
+            if(odometry.distanceCheck(currentPos[0], currentPos[1], currentPos[2], targetPoints[targetCounter][0], targetPoints[targetCounter][1])){//check if robot reached its target
                 targetCounter++;
             }
 
-            double[] power = odometry.calc(targetPoints[targetCounter][0], targetPoints[targetCounter][1], targetPoints[targetCounter][2], currentPos[0],currentPos[1],currentPos[2]);
+            double[] power = odometry.calc(targetPoints[targetCounter][0], targetPoints[targetCounter][1], targetPoints[targetCounter][2], currentPos[0],currentPos[1],currentPos[2]);//calculate power needed to give wheels to move towards target
 
-            robot.leftFront.setPower(power[0]);
+            robot.leftFront.setPower(power[0]);//give power to wheels
             robot.leftBack.setPower(power[1]);
             robot.rightFront.setPower(power[2]);
             robot.rightBack.setPower(power[3]);
 
+            //print some important values into telemetry (display on phone)
             telemetry.addData("power", Arrays.toString(power));
             telemetry.addData("current pos", Arrays.toString(currentPos));
             telemetry.addData("target", Arrays.toString(targetPoints[targetCounter]));
@@ -97,7 +98,7 @@ public class AutonomousTest extends LinearOpMode {
 
     private void resetRight(){
         robot.encR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-    }
+    }//reset encoders before start
     private void resetLeft(){
         robot.encL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
     }

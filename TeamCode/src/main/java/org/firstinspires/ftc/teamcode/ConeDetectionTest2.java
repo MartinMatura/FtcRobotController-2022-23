@@ -21,6 +21,10 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.Objects;
 
+
+//USE THIS FOR CONE DETECTION
+
+
 /*
  * Copyright (c) 2020 OpenFTC Team
  *
@@ -169,7 +173,7 @@ public class ConeDetectionTest2 extends LinearOpMode {
 
         static int colour; //0=red, 1=green, 2=blue
 
-        Point topRightAnchor = new Point(190, 235);
+        Point topRightAnchor = new Point(190, 235);//change these x, y values to change area where colour is measured (image is 320x240 px)
         Point botLeftAnchor = new Point(120, 200);
 
         Mat region;
@@ -203,7 +207,7 @@ public class ConeDetectionTest2 extends LinearOpMode {
             g = input.get(input.height()/2, input.width()/2)[1];
             b = input.get(input.height()/2, input.width()/2)[2];*/
 
-            if (!input.empty()) {
+            if (!input.empty()) {//this should have automatically detected the cone and changed the anchors, currently the area where avg colour is measured is hardcoded above
                 /*for (i = 1; i < input.height(); i++) { //i is row (y coord), j is column (x coord)
                     for (j = 1; j < input.width(); j++) {
                         r = input.get(i, j)[0];
@@ -232,9 +236,9 @@ public class ConeDetectionTest2 extends LinearOpMode {
                 region = input.submat(new Rect(topRightAnchor, botLeftAnchor));
                 avg = Core.mean(region);
 
-                if (avg.val[0] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
+                if (avg.val[0] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {//val[0] = red, 1 = green, 2 = blue
                     colour = 0;
-                    Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);
+                    Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);//fill rectangle where avg colour is measured by the avg colour
                 } else if (avg.val[1] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
                     colour = 1;
                     Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);

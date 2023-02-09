@@ -32,7 +32,7 @@ public class AutonomousTestTwo extends LinearOpMode {
                                    {100, 50, 90},
                                    {50, 0, 0} }; //array of points we set for the robot as its path
 
-        double[][] splinePoints = odometry.splinePath(targetPoints);
+        double[][] splinePoints = odometry.splinePath(targetPoints);//addition to previous calc test, uses spline points for path, otherwise same
         int splinePointCounter = 0;
 
         waitForStart();
