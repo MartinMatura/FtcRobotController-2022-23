@@ -47,6 +47,7 @@ public class OdoDriveMode extends LinearOpMode{
         boolean rotating = false;
         double rotatingEndTime = 0;
         double rotResetVal = 0;
+        double spinnerPos = 0;
 
         boolean fieldRelative = true;
 
@@ -70,42 +71,54 @@ public class OdoDriveMode extends LinearOpMode{
                 robot.grabber.setPosition(0.35);
             }
 
+            //spinner
             if(gamepad2.a){
-                robot.spinner.setPosition(1);
+                spinnerPos = 1;
+                robot.spinner.setPosition(spinnerPos);
             }
-
             if(gamepad2.b){
-                robot.spinner.setPosition(0);
+                spinnerPos = 0;
+                robot.spinner.setPosition(spinnerPos);
+            }
+            //control spinner pos with joystick
+            if(Math.abs(gamepad2.right_stick_x)>0.05){//deadzone
+                spinnerPos = spinnerPos + gamepad2.right_stick_x*0.2;
+                robot.spinner.setPosition(spinnerPos);
             }
 
             if(gamepad2.dpad_up){
                 robot.lift.setTargetPosition(-1000);
-                robot.spinner.setPosition(0.3);
+                spinnerPos = 0.3;
+                robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
             if(gamepad2.dpad_right){
                 robot.lift.setTargetPosition(-750);
-                robot.spinner.setPosition(0.5);
+                spinnerPos = 0.5;
+                robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
             if(gamepad2.dpad_down){
                 robot.lift.setTargetPosition(-100);
-                robot.spinner.setPosition(0.75);
+                spinnerPos = 0.75;
+                robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
             if(gamepad2.dpad_left){
                 robot.lift.setTargetPosition(-450);
-                robot.spinner.setPosition(0.6);
+                spinnerPos = 0.6;
+                robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
 
             if(gamepad2.left_bumper){
                 robot.lift.setTargetPosition(-0);
-                robot.spinner.setPosition(0.75);
+                spinnerPos = 0.75;
+                robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
