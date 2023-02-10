@@ -47,6 +47,7 @@ public class OdoDriveMode extends LinearOpMode{
         boolean rotating = false;
         double rotatingEndTime = 0;
         double rotResetVal = 0;
+        boolean closed = false;
         double spinnerPos = 0;
 
         boolean fieldRelative = true;
@@ -59,12 +60,13 @@ public class OdoDriveMode extends LinearOpMode{
             currPos[2] = getPos()[2] - rotResetVal;
 
 
-            if(gamepad2.x){
-                robot.grabber.setPosition(0.3);
-            }
-
             if(gamepad2.y){
-                robot.grabber.setPosition(0.1);
+                if (closed) {
+                    robot.grabber.setPosition(0.3);
+                }
+                else {
+                    robot.grabber.setPosition(0.1);
+                }
             }
 
             if(gamepad2.right_bumper){
@@ -87,14 +89,14 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
             if(gamepad2.dpad_up){
-                robot.lift.setTargetPosition(-1000);
+                robot.lift.setTargetPosition(-1025);
                 spinnerPos = 0.3;
                 robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
             if(gamepad2.dpad_right){
-                robot.lift.setTargetPosition(-750);
+                robot.lift.setTargetPosition(-700);
                 spinnerPos = 0.5;
                 robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -174,7 +176,7 @@ public class OdoDriveMode extends LinearOpMode{
                     y = gamepad1.left_stick_y;
                     power = calcPowerFR(x, y, currPos);
                 } else{
-                    y = -gamepad1.left_stick_y;
+                    y = gamepad1.left_stick_y;
                     x = gamepad1.left_stick_x;
                     power = calcPowerRR(x, y);
                 }
