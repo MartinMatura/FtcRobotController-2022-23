@@ -49,6 +49,7 @@ public class OdoDriveMode extends LinearOpMode{
         double rotResetVal = 0;
         boolean closed = false;
         double spinnerPos = 0;
+        double gripperDebounceTime = 0;
 
         boolean fieldRelative = true;
 
@@ -61,12 +62,14 @@ public class OdoDriveMode extends LinearOpMode{
 
 
             if(gamepad2.y){
+                gripperDebounceTime = runtime.time() + 2; //delay
                 if (closed) {
                     robot.grabber.setPosition(0.3);
                 }
                 else {
                     robot.grabber.setPosition(0.1);
                 }
+                closed = !closed;
             }
 
             if(gamepad2.right_bumper){
@@ -83,8 +86,8 @@ public class OdoDriveMode extends LinearOpMode{
                 robot.spinner.setPosition(spinnerPos);
             }
             //control spinner pos with joystick
-            if(Math.abs(gamepad2.right_stick_x)>0.05){//deadzone
-                spinnerPos = spinnerPos + gamepad2.right_stick_x*0.2;
+            if(Math.abs(gamepad2.right_stick_y)>0.05){//deadzone
+                spinnerPos = spinnerPos + gamepad2.right_stick_y*0.05;
                 robot.spinner.setPosition(spinnerPos);
             }
 
