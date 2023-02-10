@@ -161,8 +161,8 @@ public class OdoDriveMode extends LinearOpMode{
                     y = gamepad1.left_stick_y;
                     power = calcPowerFR(x, y, currPos);
                 } else{
-                    x = gamepad1.left_stick_y;
-                    y = -gamepad1.left_stick_x;
+                    y = -gamepad1.left_stick_y;
+                    x = gamepad1.left_stick_x;
                     power = calcPowerRR(x, y);
                 }
                 double rotDif = targetRot - currPos[2];
