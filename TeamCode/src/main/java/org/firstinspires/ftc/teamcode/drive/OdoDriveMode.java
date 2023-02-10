@@ -61,8 +61,8 @@ public class OdoDriveMode extends LinearOpMode{
             currPos[2] = getPos()[2] - rotResetVal;
 
 
-            if(gamepad2.y){
-                gripperDebounceTime = runtime.time() + 2; //delay
+            if(gamepad2.y && gripperDebounceTime < runtime.time()){
+                gripperDebounceTime = runtime.time() + 0.5; //delay
                 if (closed) {
                     robot.grabber.setPosition(0.3);
                 }
