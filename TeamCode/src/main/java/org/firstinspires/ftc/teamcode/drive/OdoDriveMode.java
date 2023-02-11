@@ -49,7 +49,10 @@ public class OdoDriveMode extends LinearOpMode{
         double rotResetVal = 0;
         boolean closed = false;
         double spinnerPos = 0;
+        double liftPos = 0;
         double gripperDebounceTime = 0;
+        boolean liftManualOp = false;
+        double liftResetVal = 0;
 
         boolean fieldRelative = true;
 
@@ -90,30 +93,51 @@ public class OdoDriveMode extends LinearOpMode{
                 spinnerPos = spinnerPos + gamepad2.right_stick_y*0.05;
                 robot.spinner.setPosition(spinnerPos);
             }
+            //control lift with joystick
+
+            if(Math.abs(gamepad2.left_stick_y)>0.05) {//deadzone
+                liftManualOp = true;
+                robot.lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                if (gamepad2.left_stick_y < 0) {
+                    robot.lift.setPower(gamepad2.left_stick_y * 0.3);
+                }
+                else {
+                    robot.lift.setPower(gamepad2.left_stick_y * 0.1);
+                }
+            }
+            else if(liftManualOp && Math.abs(gamepad2.left_stick_y)<0.05){
+                liftManualOp = false;
+                robot.lift.setTargetPosition(robot.lift.getCurrentPosition());
+                robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+
+            if (gamepad2.right_bumper) {
+                liftResetVal = robot.lift.getCurrentPosition();
+            }
 
             if(gamepad2.dpad_up){
-                robot.lift.setTargetPosition(-1025);
+                robot.lift.setTargetPosition(-1025 + (int) liftResetVal);
                 spinnerPos = 0.3;
                 robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
             if(gamepad2.dpad_right){
-                robot.lift.setTargetPosition(-700);
+                robot.lift.setTargetPosition(-700 + (int) liftResetVal);
                 spinnerPos = 0.5;
                 robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
             if(gamepad2.dpad_down){
-                robot.lift.setTargetPosition(-100);
+                robot.lift.setTargetPosition(-100 + (int) liftResetVal);
                 spinnerPos = 0.75;
                 robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             }
             if(gamepad2.dpad_left){
-                robot.lift.setTargetPosition(-450);
+                robot.lift.setTargetPosition(-450 + (int) liftResetVal);
                 spinnerPos = 0.6;
                 robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -121,7 +145,7 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
             if(gamepad2.left_bumper){
-                robot.lift.setTargetPosition(-0);
+                robot.lift.setTargetPosition(-0 + (int) liftResetVal);
                 spinnerPos = 0.75;
                 robot.spinner.setPosition(spinnerPos);
                 robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -135,10 +159,9 @@ public class OdoDriveMode extends LinearOpMode{
                 rotResetVal = getPos()[2];
                 targetRot = 0;
             }
-
-            double liftPos = robot.lift.getCurrentPosition();
+            liftPos = robot.lift.getCurrentPosition();
             //set power for lift
-            if(robot.lift.getCurrentPosition() != robot.lift.getTargetPosition()) {
+            if(robot.lift.getCurrentPosition() != robot.lift.getTargetPosition() &! liftManualOp) {
                 if((Math.abs(liftPos - robot.lift.getTargetPosition())/(liftPos - robot.lift.getTargetPosition())) == -1) {
                     robot.lift.setPower((Math.abs(liftPos - robot.lift.getTargetPosition()) / (liftPos - robot.lift.getTargetPosition())) * 0.1);
                 }

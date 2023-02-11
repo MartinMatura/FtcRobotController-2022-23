@@ -129,7 +129,7 @@ public class Odometry {
         return nextTarget;
     }
 
-    public double[] calcM(double targetX, double targetY, double targetAngle, double nowX, double nowY, double nowAngle) {
+    public double[] calcM(double targetY, double targetX, double targetAngle, double nowX, double nowY, double nowAngle) {
 
         //DRIVE TO ANY POINT IN STRAIGHT LINE WITHOUT TURNING
 
@@ -140,7 +140,7 @@ public class Odometry {
         targetAngle = targetAngle * Math.PI / 180;
         nowAngle = nowAngle * Math.PI / 180;
         */
-
+        /*
         double angleToTarget = 0;
         if(dX != 0) {
             angleToTarget = Math.atan(dY / dX);
@@ -152,6 +152,8 @@ public class Odometry {
         } else {
             turn += 3 * Math.PI / 2;
         }
+
+         */
         /*
         convert nowAngle of robot to turn, which represents angle of robot on a unit circle
         from knowing the robot's angle on the unit circle, sin and cos tell us the x and y values for calculating motor powers
@@ -185,12 +187,12 @@ public class Odometry {
         }
 
         */
-
+        double turn = 0;
         double x = Math.cos(turn);
         double y = Math.sin(turn);
 
-        double iPower = y - x;
-        double kPower = y + x;
+        double iPower = - y + x;
+        double kPower = - y - x;
         // Send calculated power to wheels
 
         return new double[]{iPower, kPower, kPower, iPower};

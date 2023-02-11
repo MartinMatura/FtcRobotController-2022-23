@@ -26,11 +26,11 @@ public class AutonomousTestTwo extends LinearOpMode {
 
         robot.init(hardwareMap);
 
-        double[][] targetPoints = {{0, 0, 0},
-                                   {100, 0, 0},
-                                   {100, 50, 0},
-                                   {100, 50, 90},
-                                   {50, 0, 0} }; //array of points we set for the robot as its path
+        double[][] targetPoints = {{20, 0, 0},
+                                   {0, 0, 0},
+                                   {0, 0, 180},
+                                   {20, 5, 90},
+                                   {0, 0, 0} }; //array of points we set for the robot as its path
 
         double[][] splinePoints = odometry.splinePath(targetPoints);//addition to previous calc test, uses spline points for path, otherwise same
         int splinePointCounter = 0;
@@ -71,14 +71,18 @@ public class AutonomousTestTwo extends LinearOpMode {
                 splinePointCounter++;
             }
 
-            double[] power = odometry.calc(targetX,targetY, targetAngle, currentPos[0],currentPos[1],currentPos[2]);
+            double[] power = odometry.calcM(targetX,targetY, targetAngle, currentPos[0],currentPos[1],currentPos[2]);
 
-            robot.leftFront.setPower(power[0]);
-            robot.leftBack.setPower(power[1]);
-            robot.rightFront.setPower(power[2]);
-            robot.rightBack.setPower(power[3]);
+            robot.leftFront.setPower(power[0]); //-x
+            robot.leftBack.setPower(power[1]); //x
+            robot.rightFront.setPower(power[2]); //x
+            robot.rightBack.setPower(power[3]); //-x
 
             telemetry.addData("power", Arrays.toString(power));
+            telemetry.addData("currentPos", Arrays.toString(currentPos));
+            telemetry.addData("targetX", targetX);
+            telemetry.addData("targetY", targetY);
+            telemetry.addData("targetAngle", targetAngle);
             telemetry.update();
         }
     }
