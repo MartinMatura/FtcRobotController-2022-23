@@ -22,6 +22,29 @@ public class OdoDriveMode extends LinearOpMode{
 
     @Override
     public void runOpMode(){
+        /**
+         * Controls:
+         * Gamepad 1 = Driver
+         *   Left stick    = Translation driving
+         *   Right stick y = Rotation driving
+         *   Left bumper   = reset rotation for field relative driving
+         *   Right bumper  = switch between robot relative and field relative modes
+         *   Left trigger  = hold down to slow down driving
+         *   Right trigger = Driving in a grid WIP
+         *   Button A      = Set origin calibration point for grid driving
+         *   Button B      = Set second calibration point for grid driving. Defined absolute angle in field
+         *
+         * Gamepad 2 = Lift operator
+         *   Left stick y  = manual lift adjustment
+         *   Right stick y = manual gripper adjustment
+         *   Left bumper   = set arm to ground
+         *   Right bumper  = reset 0 position of lift. use in case of encoder drift
+         *   Dpad down     = set arm to ground junction
+         *   Dpad left     = set arm to low junction
+         *   Dpad right    = set arm to medium junction
+         *   Dpad up       = set arm to high junction
+         *   Button Y      = open/close gripper
+         */
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -43,18 +66,36 @@ public class OdoDriveMode extends LinearOpMode{
         double[] currPos;
         double[] power;
 
+        //rotation
         double targetRot = 0;
         boolean rotating = false;
         double rotatingEndTime = 0;
         double rotResetVal = 0;
+
+        //end-effector
         boolean closed = false;
         double spinnerPos = 0;
-        double liftPos = 0;
         double gripperDebounceTime = 0;
+
+        //lift
+        double liftPos = 0;
         boolean liftManualOp = false;
         double liftResetVal = 0;
 
+        //field relative flag
         boolean fieldRelative = true;
+
+        //Dungeon crawler drive mode
+        double[] calibrationPointA;
+        calibrationPointA = new double[1];
+        double[] calibrationPointB;
+        calibrationPointB = new double[1];
+        double nullAngle = 0;
+        boolean newCalibPtA = false;
+        boolean newCalibPtB = false;
+        double[] checkpointXcoords;
+        double[] checkpointYcoords;
+
 
         while(opModeIsActive()) {
 
@@ -63,7 +104,9 @@ public class OdoDriveMode extends LinearOpMode{
             currPos = getPos();
             currPos[2] = getPos()[2] - rotResetVal;
 
-
+            /**
+             * Gamepad 2 = lift control
+             */
             if(gamepad2.y && gripperDebounceTime < runtime.time()){
                 gripperDebounceTime = runtime.time() + 0.5; //delay
                 if (closed) {
@@ -88,13 +131,14 @@ public class OdoDriveMode extends LinearOpMode{
                 spinnerPos = 0;
                 robot.spinner.setPosition(spinnerPos);
             }
+
             //control spinner pos with joystick
             if(Math.abs(gamepad2.right_stick_y)>0.05){//deadzone
                 spinnerPos = spinnerPos + gamepad2.right_stick_y*0.05;
                 robot.spinner.setPosition(spinnerPos);
             }
-            //control lift with joystick
 
+            //control lift with joystick
             if(Math.abs(gamepad2.left_stick_y)>0.05) {//deadzone
                 liftManualOp = true;
                 robot.lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -135,14 +179,6 @@ public class OdoDriveMode extends LinearOpMode{
                 setLiftPos(0, 0.75, liftResetVal);
             }
 
-            if(gamepad1.right_bumper){
-                fieldRelative = !fieldRelative;
-            }
-
-            if(gamepad1.left_bumper){ //reset field relative rotation
-                rotResetVal = getPos()[2];
-                targetRot = 0;
-            }
 
             liftPos = robot.lift.getCurrentPosition();
             //direction of rotation to lift target
@@ -161,14 +197,53 @@ public class OdoDriveMode extends LinearOpMode{
 
             }
 
+            /**
+              Gamepad 1 = driver control
+             */
+
+            if(gamepad1.right_bumper){
+                fieldRelative = !fieldRelative;
+            }
+
+            if(gamepad1.left_bumper){ //reset field relative rotation
+                rotResetVal = getPos()[2];
+                targetRot = 0;
+            }
+
+            //define calibration point A
+            //this point is further from the driver in the center of 4 poles
+            if(gamepad1.a){
+                calibrationPointA[0] = currPos[0];
+                calibrationPointA[1] = currPos[1];
+                newCalibPtA = true;
+            }
+
+            //define calibration point B
+            //this point is 2 ft closer to the driver in the center of 4 poles
+            if(gamepad1.b){
+                calibrationPointB[0] = currPos[0];
+                calibrationPointB[1] = currPos[1];
+                newCalibPtB = true;
+            }
+
+            //calculate coordinates of checkpoints based on new calibration points
+            if(newCalibPtA && newCalibPtB){
+                nullAngle = Math.atan((calibrationPointB[0]-calibrationPointA[0])/(calibrationPointB[1]-calibrationPointA[1]));
+                checkpointXcoords = getCheckpointX(calibrationPointA, nullAngle);
+                checkpointYcoords = getCheckpointY(calibrationPointA, nullAngle);
+                newCalibPtA = false;
+                newCalibPtB = false;
+            }
+
+
             //update target angle
             targetRot = getTargetAngle(targetRot);
 
             if (!rotating){
                 //if not rotating, check if rotating started
                 rotating = Math.abs(gamepad1.right_stick_x) > 0.2;
-
-            }else if(rotatingEndTime == 0 && Math.abs(gamepad1.right_stick_x) < 0.1){
+            }
+            else if(rotatingEndTime == 0 && Math.abs(gamepad1.right_stick_x) < 0.1){
                 //if rotating, and input ended, set time for when rotating will end
                 rotatingEndTime = runtime.time() + 0.1; //delay
                 rotating = false;
@@ -182,22 +257,32 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
 
-            if(true){    //gamepad1.left_stick_x != 0 || gamepad1.left_stick_y != 0) {
-                if(fieldRelative){
-                    x = gamepad1.left_stick_x;
-                    y = gamepad1.left_stick_y;
-                    power = calcPowerFR(x, y, currPos);
-                } else{
-                    y = gamepad1.left_stick_y;
-                    x = gamepad1.left_stick_x;
-                    power = calcPowerRR(x, y);
+            x = gamepad1.left_stick_x;
+            y = gamepad1.left_stick_y;
+
+            //find cardinal direction which is the closest to current rotation and orient the robot
+            //cardinal directions are determined based on calibration points A and B
+            if(gamepad1.right_trigger > 0.1) {
+                for (double angle = nullAngle; angle > nullAngle + (2 * Math.PI); angle = angle + (Math.PI / 2)) {
+                    if (Math.abs(currPos[2] - angle) <= Math.PI / 4) {
+                        targetRot = angle;
+                    }
                 }
-                double rotDif = targetRot - currPos[2];
-                driveTA(power[0], power[1], rotDif);
-                //drive(power[0], power[1]);
-                currPos = getPos();
-                currPos[2] = getPos()[2] - rotResetVal;
             }
+
+
+            if (fieldRelative) {
+                power = calcPowerFR(x, y, currPos);
+            } else {
+                power = calcPowerRR(x, y);
+            }
+            double rotDif = targetRot - currPos[2];
+            driveTA(power[0], power[1], rotDif);
+            //drive(power[0], power[1]);
+            currPos = getPos();
+            currPos[2] = getPos()[2] - rotResetVal;
+
+
             // Move by increment function. Current iteration makes the robot drive uncontrollably.
             /**
             if(gamepad1.dpad_up){
@@ -374,6 +459,28 @@ public class OdoDriveMode extends LinearOpMode{
         }
     }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+    //end of main loop
+
+    private double[] getCheckpointX(double[] originA, double nullAngle){
+        double[] xCoords;
+        xCoords = new double[11];
+        for(int i = -5; i < 5; i++){
+            //add a coordinate every 2 ft
+            xCoords[i+5] = originA[0] + (i * 60.96/Math.cos(nullAngle));
+        }
+        return xCoords;
+    }
+
+    private double[] getCheckpointY(double[] originA, double nullAngle){
+        double[] yCoords;
+        yCoords = new double[11];
+        for(int i = -5; i < 5; i++){
+            //add a coordinate every 2 ft
+            yCoords[i+5] = originA[1] + (i * 60.96/Math.cos(nullAngle));
+        }
+        return yCoords;
+    }
 
     private void setLiftPos(double liftPos, double spinnerPos, double liftResetVal){
         robot.lift.setTargetPosition((int) (liftPos + liftResetVal));
