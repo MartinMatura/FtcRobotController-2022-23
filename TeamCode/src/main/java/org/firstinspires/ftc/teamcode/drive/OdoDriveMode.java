@@ -3,16 +3,18 @@ package org.firstinspires.ftc.teamcode.drive;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareRobot;
 import org.firstinspires.ftc.teamcode.Odometry;
+import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @TeleOp(name="Odometry Drive Mode", group="Linear Opmode")
 public class OdoDriveMode extends LinearOpMode{
@@ -32,7 +34,7 @@ public class OdoDriveMode extends LinearOpMode{
          *   Left trigger  = hold down to slow down driving
          *   Right trigger = Driving in a grid WIP
          *   Button A      = Set origin calibration point for grid driving
-         *   Button B      = Set second calibration point for grid driving. Defined absolute angle in field
+         *   Button B      = Set second calibration point for grid driving. Defines absolute angle in field
          *
          * Gamepad 2 = Lift operator
          *   Left stick y  = manual lift adjustment
@@ -93,8 +95,17 @@ public class OdoDriveMode extends LinearOpMode{
         double nullAngle = 0;
         boolean newCalibPtA = false;
         boolean newCalibPtB = false;
+
+        Map<int[], double[]> checkpoints = new HashMap<>();
+
+
+        /*
         double[] checkpointXcoords;
+        checkpointXcoords = new double[10];
         double[] checkpointYcoords;
+        checkpointYcoords = new double[10];
+
+         */
 
 
         while(opModeIsActive()) {
@@ -228,11 +239,24 @@ public class OdoDriveMode extends LinearOpMode{
 
             //calculate coordinates of checkpoints based on new calibration points
             if(newCalibPtA && newCalibPtB){
-                nullAngle = Math.atan((calibrationPointB[0]-calibrationPointA[0])/(calibrationPointB[1]-calibrationPointA[1]));
-                checkpointXcoords = getCheckpointX(calibrationPointA, nullAngle);
-                checkpointYcoords = getCheckpointY(calibrationPointA, nullAngle);
                 newCalibPtA = false;
                 newCalibPtB = false;
+                nullAngle = Math.atan((calibrationPointB[0]-calibrationPointA[0])/(calibrationPointB[1]-calibrationPointA[1]));
+                for (double i = -5; i > 5; i++){
+                    for (double j = -5; j > 5; j++){
+                        int[] keyCoords;
+                        keyCoords = new int[1];
+                        keyCoords[0] = (int) (i + 5);
+                        keyCoords[1] = (int) (j + 5);
+
+                        double[] checkpointCoords;
+                        checkpointCoords = new double[1];
+                        checkpointCoords[0] = calibrationPointA[0] + j * 60.96 * Math.sin(nullAngle) + i * 60.96 * Math.cos(nullAngle);
+                        checkpointCoords[1] = calibrationPointA[1] + j * 60.96 * Math.cos(nullAngle) - i * 60.96 * Math.sin(nullAngle);
+
+                        checkpoints.put(keyCoords, checkpointCoords);
+                    }
+                }
             }
 
 
@@ -462,25 +486,7 @@ public class OdoDriveMode extends LinearOpMode{
 //////////////////////////////////////////////////////////////////////////////////////////////
     //end of main loop
 
-    private double[] getCheckpointX(double[] originA, double nullAngle){
-        double[] xCoords;
-        xCoords = new double[11];
-        for(int i = -5; i < 5; i++){
-            //add a coordinate every 2 ft
-            xCoords[i+5] = originA[0] + (i * 60.96/Math.cos(nullAngle));
-        }
-        return xCoords;
-    }
 
-    private double[] getCheckpointY(double[] originA, double nullAngle){
-        double[] yCoords;
-        yCoords = new double[11];
-        for(int i = -5; i < 5; i++){
-            //add a coordinate every 2 ft
-            yCoords[i+5] = originA[1] + (i * 60.96/Math.cos(nullAngle));
-        }
-        return yCoords;
-    }
 
     private void setLiftPos(double liftPos, double spinnerPos, double liftResetVal){
         robot.lift.setTargetPosition((int) (liftPos + liftResetVal));
