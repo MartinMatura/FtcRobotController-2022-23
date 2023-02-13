@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareRobot;
 import org.firstinspires.ftc.teamcode.Odometry;
@@ -26,12 +27,13 @@ public class AutonomousTestTwo extends LinearOpMode {
 
         robot.init(hardwareMap);
 
-        double[][] targetPoints = {{0, -10, 0},
+        double[][] targetPoints = {{68, 0, 0},
+                                   {68, 130, 0},
+                                   {30, 130, 0},
+                                   {68, 130, 0},
+                                   {68, 0, 0},
                                    {0, 0, 0},
-                                   {0, 20, 0},
-                                   {0, 0, 0},
-                                   {-20, 0, 0},
-                                   {0, 0, 0}}; //array of points we set for the robot as its path
+                                   }; //array of points we set for the robot as its path
 
         //double[][] splinePoints = odometry.splinePath(targetPoints);//addition to previous calc test, uses spline points for path, otherwise same
         int splinePointCounter = 0;
@@ -42,6 +44,7 @@ public class AutonomousTestTwo extends LinearOpMode {
         double targetX = targetPoints[splinePointCounter][0];
         double targetY = targetPoints[splinePointCounter][1];
         double targetAngle = targetPoints[splinePointCounter][2];
+        double powerSmoothing = 0;//smoothes out power between moves
 
         double[] currentPos= {0,0,0};
 
@@ -74,10 +77,12 @@ public class AutonomousTestTwo extends LinearOpMode {
                     targetX = targetPoints[splinePointCounter][0];
                     targetY = targetPoints[splinePointCounter][1];
                     targetAngle = targetPoints[splinePointCounter][2];
+                    powerSmoothing = -0.2;//reset power smoothing, set to negative to create small delay between moves
                 }
             }
 
-            double[] power = odometry.calcM(targetX,targetY, targetAngle, currentPos[0],currentPos[1],currentPos[2]);
+            powerSmoothing = powerSmoothing+0.025; //update power smoothing
+            double[] power = odometry.calcM(targetX,targetY, targetAngle, currentPos[0],currentPos[1],currentPos[2], Range.clip(powerSmoothing,0,1));
 
             robot.leftFront.setPower(power[0]); //-x
             robot.leftBack.setPower(power[1]); //x

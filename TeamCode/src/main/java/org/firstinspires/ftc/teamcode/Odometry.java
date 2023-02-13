@@ -137,7 +137,7 @@ public class Odometry {
         return nextTarget;
     }
 
-    public double[] calcM(double targetX, double targetY, double targetAngle, double nowX, double nowY, double nowAngle) {
+    public double[] calcM(double targetX, double targetY, double targetAngle, double nowX, double nowY, double nowAngle, double powerSmoothing) {
 
         //DRIVE TO ANY POINT IN STRAIGHT LINE WITHOUT TURNING
 
@@ -210,21 +210,21 @@ public class Odometry {
             x = dX/magnitude;
             y = dY/magnitude;
         }
-        double powerMul = Range.clip(magnitude/50,0.1,1);
+        double powerMul = Range.clip(magnitude/80,0.1,1);
 
         //field relative
         //double rotX = x * Math.cos(nowAngle) - y * Math.sin(-nowAngle);
         //double rotY = y * Math.cos(nowAngle) + x * Math.sin(-nowAngle);
 
-        double iPower = (-y -x)* powerMul;//(rotY - rotX) * powerMul;
-        double kPower = (-y + x)* powerMul;//(rotY + rotX) * powerMul;
+        double iPower = (-y -x)* powerMul * powerSmoothing;//(rotY - rotX) * powerMul;
+        double kPower = (-y + x)* powerMul * powerSmoothing;//(rotY + rotX) * powerMul;
 
         //turning
-        double turn = Range.clip((targetAngle - nowAngle)/2, -0.5, 0.5);
-        if(Math.abs(turn)>0.05){ //when turning, don't adjust position in any way
+        double turn = Range.clip((targetAngle - nowAngle)*2, -1, 1);
+        /*if(Math.abs(turn)>0.05){ //when turning, don't adjust position in any way
             iPower = 0;
             kPower = 0;
-        }
+        }*/
 
         // Send calculated power to wheels
         return new double[]{iPower-turn, kPower-turn, kPower+turn, iPower+turn};

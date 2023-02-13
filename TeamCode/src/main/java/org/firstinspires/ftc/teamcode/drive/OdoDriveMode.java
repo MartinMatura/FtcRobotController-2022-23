@@ -89,9 +89,9 @@ public class OdoDriveMode extends LinearOpMode{
 
         //Dungeon crawler drive mode
         double[] calibrationPointA;
-        calibrationPointA = new double[1];
+        calibrationPointA = new double[2];
         double[] calibrationPointB;
-        calibrationPointB = new double[1];
+        calibrationPointB = new double[2];
         double nullAngle = 0;
         boolean newCalibPtA = false;
         boolean newCalibPtB = false;
@@ -315,7 +315,8 @@ public class OdoDriveMode extends LinearOpMode{
                     }
                 }
             }
-
+            telemetry.addData("targetAngle", targetRot);
+            telemetry.addData("nullAngle", nullAngle);
 
             if (fieldRelative) {
                 power = calcPowerFR(x, y, currPos);
@@ -495,7 +496,7 @@ public class OdoDriveMode extends LinearOpMode{
 
              */
 
-            if (gamepad1.a){
+            if (gamepad1.x){
                 robot.leftFront.setPower(0);
                 robot.rightBack.setPower(0);
                 robot.rightFront.setPower(0);

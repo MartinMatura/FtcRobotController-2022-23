@@ -69,7 +69,7 @@ public class AutonomousTestM extends LinearOpMode{
                 targetCounter++;
             }
 
-            double[] power = odometry.calcM(targetPoints[targetCounter][0],targetPoints[targetCounter][1], targetPoints[targetCounter][2], currentPos[0],currentPos[1],currentPos[2]);
+            double[] power = odometry.calcM(targetPoints[targetCounter][0],targetPoints[targetCounter][1], targetPoints[targetCounter][2], currentPos[0],currentPos[1],currentPos[2], 0);
 
             robot.leftFront.setPower(power[0]);
             robot.leftBack.setPower(power[1]);
