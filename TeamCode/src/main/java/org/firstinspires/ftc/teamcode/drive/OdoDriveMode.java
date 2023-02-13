@@ -546,10 +546,9 @@ public class OdoDriveMode extends LinearOpMode{
         double turn = gamepad1.right_stick_x * turnCoe;
 
         robot.leftFront.setPower(Range.clip(lFrB - turn, -1.0, 1.0));
-        robot.rightBack.setPower(Range.clip(lFrB + turn, -1.0, 1.0));
-
-        robot.rightFront.setPower(Range.clip(lBrF + turn, -1.0, 1.0));
         robot.leftBack.setPower(Range.clip(lBrF - turn, -1.0, 1.0));
+        robot.rightFront.setPower(Range.clip(lBrF + turn, -1.0, 1.0));
+        robot.rightBack.setPower(Range.clip(lFrB + turn, -1.0, 1.0));
     }
 
     private void driveTA(double lFrB, double lBrF, double rotDif){ //drive function with targetAngle Adjustment
@@ -558,10 +557,10 @@ public class OdoDriveMode extends LinearOpMode{
         double turn = Range.clip(rotDif*2, -1.0, 1.0);
 
         robot.leftFront.setPower(Range.clip(lFrB - turn, -1.0, 1.0));
+        robot.leftBack.setPower(Range.clip(lBrF - turn, -1.0, 1.0));
+        robot.rightFront.setPower(Range.clip(lBrF + turn, -1.0, 1.0));
         robot.rightBack.setPower(Range.clip(lFrB + turn, -1.0, 1.0));
 
-        robot.rightFront.setPower(Range.clip(lBrF + turn, -1.0, 1.0));
-        robot.leftBack.setPower(Range.clip(lBrF - turn, -1.0, 1.0));
     }
 
     private double getTargetAngle(double targetAngle){ //update target angle with right stick input

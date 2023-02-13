@@ -8,7 +8,7 @@ import java.util.List;
 public class Odometry {
 
     public double[] nowPos(double[] prevPos, double dR, double dL, double dS) {
-        final double D = 34.5; //distance between side odometry wheels
+        final double D = 37.3; //distance between side odometry wheels
         double dC = (dR + dL) / 2;
         double deltaAngle = (dR - dL) / D;
         double alpha = deltaAngle/2;
@@ -129,7 +129,15 @@ public class Odometry {
         return nextTarget;
     }
 
-    public double[] calcM(double targetY, double targetX, double targetAngle, double nowX, double nowY, double nowAngle) {
+    public boolean distanceCheckWithAngle(double nowX, double nowY, double nowAngle, double targetX, double targetY, double targetAngle){
+        boolean nextTarget = false;
+        if((nowX - targetX)*(nowX - targetX)+(nowY - targetY)*(nowY - targetY) < 25 && Math.abs(nowAngle-targetAngle) < 0.05) {
+            nextTarget = true;
+        }
+        return nextTarget;
+    }
+
+    public double[] calcM(double targetX, double targetY, double targetAngle, double nowX, double nowY, double nowAngle) {
 
         //DRIVE TO ANY POINT IN STRAIGHT LINE WITHOUT TURNING
 
@@ -187,15 +195,39 @@ public class Odometry {
         }
 
         */
-        double turn = 0;
-        double x = Math.cos(turn);
-        double y = Math.sin(turn);
+        //PI = +x
+        //0 = -x
+        //PI/2 = y
+        //3/2 PI = -y
 
-        double iPower = - y + x;
-        double kPower = - y - x;
+        //new method
+        //dx = 1, dy = 0
+
+        double x = dX;
+        double y = dY;
+        double magnitude = Math.sqrt(Math.pow(dX,2)+Math.pow(dY,2));
+        if(magnitude > 1) {
+            x = dX/magnitude;
+            y = dY/magnitude;
+        }
+        double powerMul = Range.clip(magnitude/50,0.1,1);
+
+        //field relative
+        //double rotX = x * Math.cos(nowAngle) - y * Math.sin(-nowAngle);
+        //double rotY = y * Math.cos(nowAngle) + x * Math.sin(-nowAngle);
+
+        double iPower = (-y -x)* powerMul;//(rotY - rotX) * powerMul;
+        double kPower = (-y + x)* powerMul;//(rotY + rotX) * powerMul;
+
+        //turning
+        double turn = Range.clip((targetAngle - nowAngle)/2, -0.5, 0.5);
+        if(Math.abs(turn)>0.05){ //when turning, don't adjust position in any way
+            iPower = 0;
+            kPower = 0;
+        }
+
         // Send calculated power to wheels
-
-        return new double[]{iPower, kPower, kPower, iPower};
+        return new double[]{iPower-turn, kPower-turn, kPower+turn, iPower+turn};
     }
 
     public double[] calcS(double targetX, double targetY, double nextX, double nextY, double nowX, double nowY, double nowAngle) { //Calc when using spline points

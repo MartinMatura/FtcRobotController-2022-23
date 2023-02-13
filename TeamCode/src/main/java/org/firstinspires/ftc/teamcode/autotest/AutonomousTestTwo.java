@@ -26,21 +26,22 @@ public class AutonomousTestTwo extends LinearOpMode {
 
         robot.init(hardwareMap);
 
-        double[][] targetPoints = {{20, 0, 0},
+        double[][] targetPoints = {{0, -10, 0},
                                    {0, 0, 0},
-                                   {0, 0, 180},
-                                   {20, 5, 90},
-                                   {0, 0, 0} }; //array of points we set for the robot as its path
+                                   {0, 20, 0},
+                                   {0, 0, 0},
+                                   {-20, 0, 0},
+                                   {0, 0, 0}}; //array of points we set for the robot as its path
 
-        double[][] splinePoints = odometry.splinePath(targetPoints);//addition to previous calc test, uses spline points for path, otherwise same
+        //double[][] splinePoints = odometry.splinePath(targetPoints);//addition to previous calc test, uses spline points for path, otherwise same
         int splinePointCounter = 0;
 
         waitForStart();
         resetEncoders();
 
-        double targetX = splinePoints[splinePointCounter][0];
-        double targetY = splinePoints[splinePointCounter][1];
-        double targetAngle = 0;
+        double targetX = targetPoints[splinePointCounter][0];
+        double targetY = targetPoints[splinePointCounter][1];
+        double targetAngle = targetPoints[splinePointCounter][2];
 
         double[] currentPos= {0,0,0};
 
@@ -67,8 +68,13 @@ public class AutonomousTestTwo extends LinearOpMode {
             double dS = (sCurrPos - sPrevPos)/countsPerCm;
 
             currentPos = odometry.nowPos(currentPos, dR, dL, dS);
-            if(odometry.distanceCheck(currentPos[0],currentPos[1],currentPos[2],targetX,targetY)){
-                splinePointCounter++;
+            if(odometry.distanceCheckWithAngle(currentPos[0],currentPos[1],currentPos[2],targetX,targetY,targetAngle)){
+                if(splinePointCounter+1<targetPoints.length){
+                    splinePointCounter++;
+                    targetX = targetPoints[splinePointCounter][0];
+                    targetY = targetPoints[splinePointCounter][1];
+                    targetAngle = targetPoints[splinePointCounter][2];
+                }
             }
 
             double[] power = odometry.calcM(targetX,targetY, targetAngle, currentPos[0],currentPos[1],currentPos[2]);
@@ -82,7 +88,10 @@ public class AutonomousTestTwo extends LinearOpMode {
             telemetry.addData("currentPos", Arrays.toString(currentPos));
             telemetry.addData("targetX", targetX);
             telemetry.addData("targetY", targetY);
+            telemetry.addData("dX", targetX-currentPos[0]);
+            telemetry.addData("dY", targetY-currentPos[1]);
             telemetry.addData("targetAngle", targetAngle);
+            telemetry.addData("pointCounter", splinePointCounter);
             telemetry.update();
         }
     }
