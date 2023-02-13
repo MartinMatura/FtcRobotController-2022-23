@@ -284,12 +284,34 @@ public class OdoDriveMode extends LinearOpMode{
             x = gamepad1.left_stick_x;
             y = gamepad1.left_stick_y;
 
-            //find cardinal direction which is the closest to current rotation and orient the robot
-            //cardinal directions are determined based on calibration points A and B
+
+
+            double[] closestPoint;
+            closestPoint = new double[1];
+
             if(gamepad1.right_trigger > 0.1) {
+                //find cardinal direction which is the closest to current rotation and orient the robot
+                //cardinal directions are determined based on calibration points A and B
                 for (double angle = nullAngle; angle > nullAngle + (2 * Math.PI); angle = angle + (Math.PI / 2)) {
                     if (Math.abs(currPos[2] - angle) <= Math.PI / 4) {
                         targetRot = angle;
+                    }
+                }
+                //find closest checkpoint
+                for (Map.Entry<int[], double[]> entry : checkpoints.entrySet()){
+                    double xCoord = entry.getValue()[0];
+                    double yCoord = entry.getValue()[1];
+                    double deltaX = xCoord-currPos[0];
+                    double deltaY = yCoord-currPos[1];
+                    double distanceToCP = Math.sqrt(Math.pow(deltaX, 2) + Math.pow((deltaY), 2));
+                    double distanceFromCheckpointX = distanceToCP * Math.sin(Math.atan((deltaX)/(deltaY) + nullAngle));
+                    double distanceFromCheckpointY = distanceToCP * Math.cos(Math.atan((deltaX)/(deltaY) + nullAngle));
+
+                    //closest checkpoint = 1 ft away
+                    if (Math.abs(distanceFromCheckpointX) <= 30.48 && Math.abs(distanceFromCheckpointY) <= 30.48){
+                        closestPoint = entry.getValue();
+
+                        break;
                     }
                 }
             }
