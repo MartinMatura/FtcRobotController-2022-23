@@ -35,22 +35,23 @@ public class AutonomousTestTwo extends LinearOpMode {
         // liftPos (-1100 - 0)
         // spinnerPos (0 - 1) when lift down(0.75=pickup,1=up)
         // grabber (0.3 - closed, 0.1 open)
+        double pi = 3.1416;
         double[][] targetPoints = {
-                {0,    0, 0, 0,     1, 0.3},
-                //{-100, 0, 0, -700,  0.5, 0.3}, //go to pole
-                //{-100, 0, 0, -700,  0.5, 0.1}, //release cone
-                //{-130, 0, 0, 0,     0.75, 0.1}, //drop lift
+                {0,    0, 0,     0,    1,  0.3}, //grab cone tight
+                {-127, 0, 0,    -750,  0.5, 0.3}, //go to pole
+                {-127, 0, pi/4, -750,  0.5, 0.3}, //rotate
+                {-127, 0, pi/4, -750,  0.5, 0.15}, //release cone
+                {-127, 0, pi/2, -750,  0.5, 0.15}, //rotate back
+                {-127, 0, pi/2,  0,    1,  0.15}, //drop lift, slightly move to center of intersection
+                {-127, 0, pi,    0,    1,  0.15}, //rotate fully to cone stack
+                {-127, -60, pi,    0,    0.75,  0.15}, //move towards cone stack
+                {-127, -60, pi,    0,    1,  0.3}, //grab cone from stack
+                {-127, 0, pi,    0,    1,  0.3}, //move to intersection
+                {-127, 0, pi+3/4*pi,    0,    1,  0.3}, //rotate on intersection
+                
                 //{-100, 0, 0, 0,  1,    0.1},
                 //{-100, 0, 0, -100,  1,    0.1},
         }; //array of points we set for the robot as its path
-        /*double[][] targetPoints = {{0, 10, 0},
-                                   {65, 10, 0},
-                                   {65, 130, -0.1},
-                                   {25, 130, 0},
-                                   {65, 130, 0},
-                                   {65, 0, 0},
-                                   {0, 0, 0},
-                                   }; */
 
         int pointCounter = 0; //counts current step in targetPoints Array
 
