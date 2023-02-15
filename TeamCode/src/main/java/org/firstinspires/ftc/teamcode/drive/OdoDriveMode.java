@@ -189,23 +189,23 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
             if(gamepad2.dpad_up){
-                setLiftPos(-1025 + liftResetVal, 0.3+spinner90);
+                setLiftPos(-1025 + liftResetVal, 0.3+spinner90); //SP 0.3
             }
 
             if(gamepad2.dpad_right){
-                setLiftPos(-700 + liftResetVal, 0.5+spinner90);
+                setLiftPos(-700 + liftResetVal, 0.5+spinner90); //SP 0.5
             }
 
             if(gamepad2.dpad_down){
-                setLiftPos(-100 + liftResetVal, 0.75+spinner90);
+                setLiftPos(-100 + liftResetVal, 0.75+spinner90); //SP 0.75
             }
 
             if(gamepad2.dpad_left){
-                setLiftPos(-450 + liftResetVal, 0.6+spinner90);
+                setLiftPos(-450 + liftResetVal, 0.6+spinner90); //SP 0.6
             }
 
             if(gamepad2.left_bumper){
-                setLiftPos(0 + liftResetVal, 0.75+spinner90);
+                setLiftPos(0 + liftResetVal, 0.75+spinner90); //SP 0.75
             }
 
             runLift(0.5,0.15,liftManualOp);
@@ -534,7 +534,7 @@ public class OdoDriveMode extends LinearOpMode{
 
     private void setLiftPos(double liftPos, double spinnerPos){
         robot.lift.setTargetPosition((int) (liftPos));
-        robot.spinner.setPosition(spinnerPos);
+        robot.spinner.setPosition(0.0004385*liftPos + 750);
         robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
