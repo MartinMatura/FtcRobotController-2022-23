@@ -76,8 +76,11 @@ public class OdoDriveMode extends LinearOpMode{
 
         //end-effector
         boolean closed = false;
+        boolean carry = true;
         double spinnerPos = 0;
         double gripperDebounceTime = 0;
+        double spinnerDebounceTime = 0;
+        double spinner90 = 0;
 
         //lift
         double liftPos = 0;
@@ -129,6 +132,20 @@ public class OdoDriveMode extends LinearOpMode{
                 closed = !closed;
             }
 
+            if(gamepad2.x && (spinnerDebounceTime < runtime.time())){
+                spinnerDebounceTime = runtime.time() + 0.5; //delay
+                if (!carry) {
+                    robot.spinner.setPosition(robot.spinner.getPosition()+0.25);
+                    spinner90 = 0.25;
+                }
+                else {
+                    robot.spinner.setPosition(robot.spinner.getPosition()-0.25);
+                    spinner90 = 0;
+                }
+                carry = !carry;
+            }
+
+
             if(gamepad2.right_bumper){
                 robot.grabber.setPosition(0.35);
             }
@@ -171,42 +188,27 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
             if(gamepad2.dpad_up){
-                setLiftPos(-1025, 0.3, liftResetVal);
+                setLiftPos(-1025 + liftResetVal, 0.3+spinner90);
             }
 
             if(gamepad2.dpad_right){
-                setLiftPos(-700, 0.5, liftResetVal);
+                setLiftPos(-700 + liftResetVal, 0.5+spinner90);
             }
 
             if(gamepad2.dpad_down){
-                setLiftPos(-100, 0.75, liftResetVal);
+                setLiftPos(-100 + liftResetVal, 0.75+spinner90);
             }
 
             if(gamepad2.dpad_left){
-                setLiftPos(-450, 0.6, liftResetVal);
+                setLiftPos(-450 + liftResetVal, 0.6+spinner90);
             }
 
             if(gamepad2.left_bumper){
-                setLiftPos(0, 0.75, liftResetVal);
+                setLiftPos(0 + liftResetVal, 0.75+spinner90);
             }
 
+            runLift(0.5,0.1,liftManualOp);
 
-            liftPos = robot.lift.getCurrentPosition();
-            //direction of rotation to lift target
-            double liftRotDir = (Math.abs(liftPos - robot.lift.getTargetPosition()) / (liftPos - robot.lift.getTargetPosition()));
-            //set power for lift in assisted mode
-            if(robot.lift.getCurrentPosition() != robot.lift.getTargetPosition() &! liftManualOp) {
-                if(liftRotDir == -1) {
-                    robot.lift.setPower(liftRotDir * 0.1);
-                }
-                else if ((robot.lift.getCurrentPosition() < -850) && (liftRotDir == 1)){
-                    robot.lift.setPower(liftRotDir * 0.1);
-                }
-                else {
-                    robot.lift.setPower(liftRotDir * 0.5);
-                }
-
-            }
 
             /**
               Gamepad 1 = driver control
@@ -258,7 +260,7 @@ public class OdoDriveMode extends LinearOpMode{
                     }
                 }
             }
-
+            telemetry.addData("closestPoint", (checkpoints));
 
             //update target angle
             targetRot = getTargetAngle(targetRot);
@@ -303,12 +305,11 @@ public class OdoDriveMode extends LinearOpMode{
                     double yCoord = entry.getValue()[1];
                     double deltaX = xCoord-currPos[0];
                     double deltaY = yCoord-currPos[1];
-                    double distanceToCP = Math.sqrt(Math.pow(deltaX, 2) + Math.pow((deltaY), 2));
-                    double distanceFromCheckpointX = distanceToCP * Math.sin(Math.atan((deltaX)/(deltaY) + nullAngle));
-                    double distanceFromCheckpointY = distanceToCP * Math.cos(Math.atan((deltaX)/(deltaY) + nullAngle));
+                    double fieldDistCPX = deltaX * Math.cos(nullAngle) + deltaY * Math.sin(nullAngle);
+                    double fieldDistCPY = deltaY * Math.cos(nullAngle) - deltaX * Math.sin(nullAngle);
 
-                    //closest checkpoint = 1 ft away
-                    if(true){//(Math.abs(distanceFromCheckpointX) <= 30.48 && Math.abs(distanceFromCheckpointY) <= 30.48){
+                    //closest checkpoint = 1 ft away in both directions
+                    if(true){//(Math.abs(fieldDistCPX) <= 30.48 && Math.abs(fieldDistCPY) <= 30.48){
                         closestPoint = entry.getValue();
 
                         break;
@@ -510,10 +511,27 @@ public class OdoDriveMode extends LinearOpMode{
 //////////////////////////////////////////////////////////////////////////////////////////////
     //end of main loop
 
+    private void runLift(double highPower, double lowPower, boolean liftManualOp){
+        double liftPos;
+        liftPos = robot.lift.getCurrentPosition();
+        //direction of rotation to lift target
+        double liftRotDir = (Math.abs(liftPos - robot.lift.getTargetPosition()) / (liftPos - robot.lift.getTargetPosition()));
+        //set power for lift in assisted mode
+        if(robot.lift.getCurrentPosition() != robot.lift.getTargetPosition() &! liftManualOp) {
+            if(liftRotDir == -1) {
+                robot.lift.setPower(liftRotDir * lowPower);
+            }
+            else if ((robot.lift.getCurrentPosition() < -850) && (liftRotDir == 1)){
+                robot.lift.setPower(liftRotDir * lowPower);
+            }
+            else {
+                robot.lift.setPower(liftRotDir * highPower);
+            }
+        }
+    }
 
-
-    private void setLiftPos(double liftPos, double spinnerPos, double liftResetVal){
-        robot.lift.setTargetPosition((int) (liftPos + liftResetVal));
+    private void setLiftPos(double liftPos, double spinnerPos){
+        robot.lift.setTargetPosition((int) (liftPos));
         robot.spinner.setPosition(spinnerPos);
         robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
