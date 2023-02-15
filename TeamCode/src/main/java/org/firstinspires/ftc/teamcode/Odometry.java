@@ -147,7 +147,7 @@ public class Odometry {
 
     public boolean distanceCheckWithAngle(double nowX, double nowY, double nowAngle, double targetX, double targetY, double targetAngle){
         boolean nextTarget = false;
-        if((nowX - targetX)*(nowX - targetX)+(nowY - targetY)*(nowY - targetY) < 25 && Math.abs(nowAngle-targetAngle) < 0.05) {
+        if((nowX - targetX)*(nowX - targetX)+(nowY - targetY)*(nowY - targetY) < 10 && Math.abs(nowAngle-targetAngle) < 0.05) {
             nextTarget = true;
         }
         return nextTarget;
@@ -226,7 +226,7 @@ public class Odometry {
             x = dX/magnitude;
             y = dY/magnitude;
         }
-        double powerMul = Range.clip(magnitude/50,0.1,0.8);
+        double powerMul = Range.clip(magnitude/50,0.1,1);
 
         //field relative
         //double rotX = x * Math.cos(nowAngle) - y * Math.sin(-nowAngle);
