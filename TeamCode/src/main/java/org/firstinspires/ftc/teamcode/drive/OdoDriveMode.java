@@ -512,7 +512,7 @@ public class OdoDriveMode extends LinearOpMode{
 
 //////////////////////////////////////////////////////////////////////////////////////////////
     //end of main loop
-
+//
     private void runLift(double highPower, double lowPower, boolean liftManualOp){
         double liftPos;
         liftPos = robot.lift.getCurrentPosition();
