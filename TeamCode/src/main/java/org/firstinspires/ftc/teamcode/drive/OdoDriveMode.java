@@ -178,13 +178,13 @@ public class OdoDriveMode extends LinearOpMode{
                 if(gamepad2.left_stick_y < 0) {
                     robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.3);
                     if(!manualAdjust){
-                        robot.spinner.setPosition(0.0004385*liftPos + 0.75);
+                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0003405 *liftPos + 0.742);
                     }
                 }
                 else {
                     robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.15);
                     if(!manualAdjust){
-                        robot.spinner.setPosition(0.0004385*liftPos + 0.75);
+                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0003405 *liftPos + 0.742);
                     }
                 }
             }
@@ -550,7 +550,7 @@ public class OdoDriveMode extends LinearOpMode{
 
     private void setLiftPos(double liftPos, double spinnerPos){
         robot.lift.setTargetPosition((int) (liftPos));
-        robot.spinner.setPosition(0.0004385*liftPos + 0.75);
+        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0003405 *liftPos + 0.742);
         robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
