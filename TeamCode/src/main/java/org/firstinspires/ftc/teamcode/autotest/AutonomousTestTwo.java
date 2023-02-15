@@ -38,17 +38,29 @@ public class AutonomousTestTwo extends LinearOpMode {
         double pi = 3.1416;
         double[][] targetPoints = {
                 {0,    0, 0,     0,    1,  0.3}, //grab cone tight
-                {-127, 0, 0,    -750,  0.5, 0.3}, //go to pole
-                {-127, 0, pi/4, -750,  0.5, 0.3}, //rotate
-                {-127, 0, pi/4, -750,  0.5, 0.15}, //release cone
-                {-127, 0, pi/2, -750,  0.5, 0.15}, //rotate back
-                {-127, 0, pi/2,  0,    1,  0.15}, //drop lift, slightly move to center of intersection
-                {-127, 0, pi,    0,    1,  0.15}, //rotate fully to cone stack
-                {-127, -60, pi,    0,    0.75,  0.15}, //move towards cone stack
-                {-127, -60, pi,    0,    1,  0.3}, //grab cone from stack
-                {-127, 0, pi,    0,    1,  0.3}, //move to intersection
-                {-127, 0, pi+3/4*pi,    0,    1,  0.3}, //rotate on intersection
-                
+                {-97, 0, 0,    -820,  0.5, 0.3}, //go to pole, lift lift
+                {-97, -8.5, 0,    -820,  0.5, 0.3}, //move slightly back
+                {-97, -8.5, 0,    -820,  0.45, 0.1}, //drop cone
+                {-97, 0, 0,    -820,  0.6, 0.3}, //move forward again
+                {-127, 0, 0,    -820, 0.6, 0.1}, //move to intersection
+                {-127, 0, 0.14,    0,  1, 0.1}, //drop lift
+
+                /* old method
+                {0,    0, 0,     0,    1,  0.3}, //grab cone tight
+                {-125, 0, 0,    -775,  0.5, 0.3}, //go to pole
+                {-125, 0, pi/4, -775,  0.5, 0.3}, //rotate
+                {-125, 0, pi/4, -775,  0.5, 0.1}, //release cone
+                {-125, 0, pi/2, -775,  0.5, 0.1}, //rotate back
+                {-127, 0, pi/2,  0,    1,  0.1}, //drop lift, slightly move to center of intersection
+                {-127, 0, pi,    0,    1,  0.1}, //rotate fully to cone stack
+                {-130, -52, pi,    0,    0.75,  0.1}, //move towards cone stack
+                {-130, -52, pi,    0,    0.75,  0.3}, //grab cone from stack
+                {-127, 0, pi,     -1100,    1,  0.3}, //move to intersection
+                {-127, 0, 7/4*pi, -1100,  0.3,  0.3}, //rotate on intersection
+                {-127, 0, 7/4*pi, -1100,  0.3,  0.1}, //drop second cone
+                {-127, 0, pi,     -1100,    1,  0.1}, //rotate back
+                {-127, -52, pi,    0,    0.75,  0.1}, //drop lift, move to cone stack
+                */
                 //{-100, 0, 0, 0,  1,    0.1},
                 //{-100, 0, 0, -100,  1,    0.1},
         }; //array of points we set for the robot as its path
@@ -138,6 +150,7 @@ public class AutonomousTestTwo extends LinearOpMode {
             telemetry.addData("targetY", targetY);
             telemetry.addData("dX", targetX-currentPos[0]);
             telemetry.addData("dY", targetY-currentPos[1]);
+            telemetry.addData("dRot", targetAngle-currentPos[2]);
             telemetry.addData("grabberPos", robot.grabber.getPosition());
             telemetry.addData("pointCounter", pointCounter);
             telemetry.update();

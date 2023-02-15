@@ -8,7 +8,7 @@ import java.util.List;
 public class Odometry {
 
     public double[] nowPos(double[] prevPos, double dR, double dL, double dS) {
-        final double D = 37.3; //distance between side odometry wheels
+        final double D = 36.5; //distance between side odometry wheels
         double deltaAngle = (dR - dL) / D;
         double alpha = deltaAngle/2;
 
@@ -226,7 +226,7 @@ public class Odometry {
             x = dX/magnitude;
             y = - dY/magnitude;
         }
-        double powerMul = Range.clip(magnitude/50,0.1,1);
+        double powerMul = Range.clip(magnitude/50,0.2,1);
 
         //field relative
         double rotX = y * Math.sin(nowAngle) + x * Math.cos(nowAngle) ;
