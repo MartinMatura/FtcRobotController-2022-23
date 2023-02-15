@@ -170,7 +170,7 @@ public class OdoDriveMode extends LinearOpMode{
 
             }
 
-            //control lift with joystick
+            //control lift with joystick.
             liftPos = robot.lift.getCurrentPosition();
             if(Math.abs(gamepad2.left_stick_y)>0.05) {//deadzone
                 liftManualOp = true;
