@@ -147,7 +147,7 @@ public class Odometry {
 
     public boolean distanceCheckWithAngle(double nowX, double nowY, double nowAngle, double targetX, double targetY, double targetAngle){
         boolean nextTarget = false;
-        if((nowX - targetX)*(nowX - targetX)+(nowY - targetY)*(nowY - targetY) < 10 && Math.abs(nowAngle-targetAngle) < 0.05) {
+        if((nowX - targetX)*(nowX - targetX)+(nowY - targetY)*(nowY - targetY) < 10 && Math.abs(nowAngle-targetAngle) < 0.025) {
             nextTarget = true;
         }
         return nextTarget;
@@ -220,20 +220,20 @@ public class Odometry {
         //dx = 1, dy = 0
 
         double x = dX;
-        double y = dY;
+        double y = - dY;
         double magnitude = Math.sqrt(Math.pow(dX,2)+Math.pow(dY,2));
         if(magnitude > 1) {
             x = dX/magnitude;
-            y = dY/magnitude;
+            y = - dY/magnitude;
         }
         double powerMul = Range.clip(magnitude/50,0.1,1);
 
         //field relative
-        //double rotX = x * Math.cos(nowAngle) - y * Math.sin(-nowAngle);
-        //double rotY = y * Math.cos(nowAngle) + x * Math.sin(-nowAngle);
+        double rotX = y * Math.sin(nowAngle) + x * Math.cos(nowAngle) ;
+        double rotY = y * Math.cos(nowAngle) - x * Math.sin(nowAngle);
 
-        double iPower = (-y -x)* powerMul * powerSmoothing;//(rotY - rotX) * powerMul;
-        double kPower = (-y + x)* powerMul * powerSmoothing;//(rotY + rotX) * powerMul;
+        double iPower = (rotY - rotX) * powerMul;
+        double kPower = (rotY + rotX) * powerMul;
 
         //turning
         double turn = Range.clip((targetAngle - nowAngle)*2, -1, 1);
@@ -243,7 +243,7 @@ public class Odometry {
         }*/
 
         // Send calculated power to wheels
-        return new double[]{iPower-turn, kPower-turn, kPower+turn, iPower+turn};
+        return new double[]{(iPower-turn)*powerSmoothing, (kPower-turn)*powerSmoothing, (kPower+turn)*powerSmoothing, (iPower+turn)*powerSmoothing};
     }
 
     public double[] calcS(double targetX, double targetY, double nextX, double nextY, double nowX, double nowY, double nowAngle) { //Calc when using spline points

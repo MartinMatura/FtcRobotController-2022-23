@@ -301,8 +301,8 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
 
-            x = gamepad1.left_stick_x;
-            y = gamepad1.left_stick_y;
+            x = Math.pow(gamepad1.left_stick_x, 2) * Math.copySign(1,gamepad1.left_stick_x);
+            y = Math.pow(gamepad1.left_stick_y, 2) * Math.copySign(1,gamepad1.left_stick_y);
 
 
 
