@@ -27,11 +27,12 @@ public class AutonomousTestTwo extends LinearOpMode {
 
         robot.init(hardwareMap);
 
-        double[][] targetPoints = {{68, 0, 0},
-                                   {68, 130, 0},
+        double[][] targetPoints = {{0, 10, 0},
+                                   {75, 10, 0},
+                                   {75, 130, 0},
                                    {30, 130, 0},
-                                   {68, 130, 0},
-                                   {68, 0, 0},
+                                   {75, 130, 0},
+                                   {75, 6, 0},
                                    {0, 0, 0},
                                    }; //array of points we set for the robot as its path
 

@@ -9,20 +9,36 @@ public class Odometry {
 
     public double[] nowPos(double[] prevPos, double dR, double dL, double dS) {
         final double D = 37.3; //distance between side odometry wheels
-        double dC = (dR + dL) / 2;
         double deltaAngle = (dR - dL) / D;
         double alpha = deltaAngle/2;
-        double rC = (dL / deltaAngle) + (D / 2);
-        double h = Math.sqrt(2*Math.pow(rC, 2) - 2*Math.pow(rC,2)*Math.cos(deltaAngle));
-        if(deltaAngle == 0) {
-            h = dC;
-        }
+
+        //double rC = (dL / deltaAngle) + (D / 2);
+        //double h = Math.sqrt(2*Math.pow(rC, 2) - 2*Math.pow(rC,2)*Math.cos(deltaAngle));
+        // if(deltaAngle == 0) {
+        //    h = dC;
+        //} not sure why this is here when it is not used for anything
+
+        // the third wheel moves when we rotate, so cancel this out with a prediction
+        final double auxTrackWidth = 15.5; //distance between center and third auxiliary odometry wheel
+        double aux_prediction = deltaAngle * auxTrackWidth;
+
+        double dY = (dR + dL) / 2; //yDelta
+        double dX = dS - aux_prediction; //xDelta
+
+        //dx = 1, dy = 0, angle = pi/2
+        //deltaY = 0*0 - 1*1 = -1
+        //deltaX = 0*1 + 1*0 = 0
+
+        double deltaY = (dY * Math.cos(prevPos[2] - deltaAngle)) - (dX * Math.sin(prevPos[2] - deltaAngle));
+        double deltaX = (dY * Math.sin(prevPos[2] - deltaAngle)) + (dX * Math.cos(prevPos[2] - deltaAngle));
 
         //swap deltaX and deltaY calculation for front-facing chassis
-        double deltaY = (dC * Math.cos(alpha + prevPos[2])) + (dS * Math.sin(alpha + prevPos[2]));
-        double deltaX = (dC * Math.sin(alpha + prevPos[2])) + (dS * Math.cos(alpha + prevPos[2]));
+        //double deltaY = (dY * Math.cos(alpha + prevPos[2])) + (dX * Math.sin(alpha + prevPos[2]));
+        //double deltaX = (dY * Math.sin(alpha + prevPos[2])) + (dX * Math.cos(alpha + prevPos[2]));
 
         double[] newPos = {prevPos[0] + deltaX, prevPos[1] + deltaY, prevPos[2] - deltaAngle};
+        //double[] newPos = {prevPos[0] + dX, prevPos[1] + dY, prevPos[2] - deltaAngle};
+        //double[] newPos = {dX,dY,- deltaAngle};
 
         return newPos;
     }
@@ -210,7 +226,7 @@ public class Odometry {
             x = dX/magnitude;
             y = dY/magnitude;
         }
-        double powerMul = Range.clip(magnitude/80,0.1,1);
+        double powerMul = Range.clip(magnitude/50,0.1,0.8);
 
         //field relative
         //double rotX = x * Math.cos(nowAngle) - y * Math.sin(-nowAngle);

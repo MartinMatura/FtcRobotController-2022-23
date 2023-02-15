@@ -292,7 +292,7 @@ public class OdoDriveMode extends LinearOpMode{
             if(gamepad1.right_trigger > 0.1) {
                 //find cardinal direction which is the closest to current rotation and orient the robot
                 //cardinal directions are determined based on calibration points A and B
-                for (double angle = nullAngle; angle > nullAngle + (2 * Math.PI); angle = angle + (Math.PI / 2)) {
+                for (double angle = nullAngle; angle < nullAngle + (2 * Math.PI); angle = angle + (Math.PI / 2)) {
                     if (Math.abs(currPos[2] - angle) <= Math.PI / 4) {
                         targetRot = angle;
                     }
@@ -308,13 +308,14 @@ public class OdoDriveMode extends LinearOpMode{
                     double distanceFromCheckpointY = distanceToCP * Math.cos(Math.atan((deltaX)/(deltaY) + nullAngle));
 
                     //closest checkpoint = 1 ft away
-                    if (Math.abs(distanceFromCheckpointX) <= 30.48 && Math.abs(distanceFromCheckpointY) <= 30.48){
+                    if(true){//(Math.abs(distanceFromCheckpointX) <= 30.48 && Math.abs(distanceFromCheckpointY) <= 30.48){
                         closestPoint = entry.getValue();
 
                         break;
                     }
                 }
             }
+            telemetry.addData("closestPoint", Arrays.toString(closestPoint));
             telemetry.addData("targetAngle", targetRot);
             telemetry.addData("nullAngle", nullAngle);
 
@@ -591,21 +592,18 @@ public class OdoDriveMode extends LinearOpMode{
         return targetAngle + 0.1 * gamepad1.right_stick_x * turnCoe;
     }
 
+    double rCurrPos = 0;
+    double lCurrPos = 0;
+    double sCurrPos = 0;
+    double[] prevPos = {0,0,0};
     private double[] getPos(){ //update position using odometry
         double     countsPerMotorRev   = 8192 ;    // eg: TETRIX Motor Encoder
         double     wheelDiameterCm     = 6.0 ;     // For figuring circumference
         double     countsPerCm         = (countsPerMotorRev / (wheelDiameterCm * Math.PI));
 
-        double[] currPos = {0,0,0};
-
         double rPrevPos;
-        double rCurrPos = 0;
-
         double lPrevPos;
-        double lCurrPos = 0;
-
         double sPrevPos;
-        double sCurrPos = 0;
 
         rPrevPos = rCurrPos;
         rCurrPos = robot.encR.getCurrentPosition();
@@ -619,9 +617,10 @@ public class OdoDriveMode extends LinearOpMode{
         sCurrPos = robot.encS.getCurrentPosition();
         double dS = (sCurrPos - sPrevPos)/countsPerCm;
 
-        currPos = odometry.nowPos(currPos, dR, dL, dS);
+        double[] updatedPos = odometry.nowPos(prevPos, dR, dL, dS);
+        prevPos = updatedPos;
 
-        return currPos;
+        return updatedPos;
     }
 
     private List<double[]> dpadUp(List<double[]> path, double[] currPos, int lastInput){ //add new target point to path based on dpad input
