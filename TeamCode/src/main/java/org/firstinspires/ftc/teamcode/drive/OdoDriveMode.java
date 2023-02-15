@@ -92,6 +92,7 @@ public class OdoDriveMode extends LinearOpMode{
         //field relative flag
         boolean fieldRelative = true;
 
+        /*
         //Dungeon crawler drive mode
         double[] calibrationPointA;
         calibrationPointA = new double[2];
@@ -102,7 +103,7 @@ public class OdoDriveMode extends LinearOpMode{
         boolean newCalibPtB = false;
 
         Map<int[], double[]> checkpoints = new HashMap<>();
-
+ /
 
         /*
         double[] checkpointXcoords;
@@ -241,44 +242,6 @@ public class OdoDriveMode extends LinearOpMode{
                 targetRot = 0;
             }
 
-            //define calibration point A
-            //this point is further from the driver in the center of 4 poles
-            if(gamepad1.a){
-                calibrationPointA[0] = currPos[0];
-                calibrationPointA[1] = currPos[1];
-                newCalibPtA = true;
-            }
-
-            //define calibration point B
-            //this point is 2 ft closer to the driver in the center of 4 poles
-            if(gamepad1.b){
-                calibrationPointB[0] = currPos[0];
-                calibrationPointB[1] = currPos[1];
-                newCalibPtB = true;
-            }
-
-            //calculate coordinates of checkpoints based on new calibration points
-            if(newCalibPtA && newCalibPtB){
-                newCalibPtA = false;
-                newCalibPtB = false;
-                nullAngle = Math.atan((calibrationPointB[0]-calibrationPointA[0])/(calibrationPointB[1]-calibrationPointA[1]));
-                for (double i = -5; i > 5; i++){
-                    for (double j = -5; j > 5; j++){
-                        int[] keyCoords;
-                        keyCoords = new int[1];
-                        keyCoords[0] = (int) (i + 5);
-                        keyCoords[1] = (int) (j + 5);
-
-                        double[] checkpointCoords;
-                        checkpointCoords = new double[1];
-                        checkpointCoords[0] = calibrationPointA[0] + j * 60.96 * Math.sin(nullAngle) + i * 60.96 * Math.cos(nullAngle);
-                        checkpointCoords[1] = calibrationPointA[1] + j * 60.96 * Math.cos(nullAngle) - i * 60.96 * Math.sin(nullAngle);
-
-                        checkpoints.put(keyCoords, checkpointCoords);
-                    }
-                }
-            }
-            telemetry.addData("closestPoint", (checkpoints));
 
             //update target angle
             targetRot = getTargetAngle(targetRot);
@@ -311,32 +274,14 @@ public class OdoDriveMode extends LinearOpMode{
 
             if(gamepad1.right_trigger > 0.1) {
                 //find cardinal direction which is the closest to current rotation and orient the robot
-                //cardinal directions are determined based on calibration points A and B
-                for (double angle = nullAngle; angle < nullAngle + (2 * Math.PI); angle = angle + (Math.PI / 2)) {
-                    if (Math.abs(currPos[2] - angle) <= Math.PI / 4) {
-                        targetRot = angle;
-                    }
-                }
-                //find closest checkpoint
-                for (Map.Entry<int[], double[]> entry : checkpoints.entrySet()){
-                    double xCoord = entry.getValue()[0];
-                    double yCoord = entry.getValue()[1];
-                    double deltaX = xCoord-currPos[0];
-                    double deltaY = yCoord-currPos[1];
-                    double fieldDistCPX = deltaX * Math.cos(nullAngle) + deltaY * Math.sin(nullAngle);
-                    double fieldDistCPY = deltaY * Math.cos(nullAngle) - deltaX * Math.sin(nullAngle);
-
-                    //closest checkpoint = 1 ft away in both directions
-                    if(true){//(Math.abs(fieldDistCPX) <= 30.48 && Math.abs(fieldDistCPY) <= 30.48){
-                        closestPoint = entry.getValue();
-
-                        break;
+                int turns = (int) (currPos[2] / (2 * Math.PI));
+                for (double angle = rotResetVal; angle < rotResetVal + (2 * Math.PI); angle = angle + (Math.PI / 2)) {
+                    if (Math.abs(currPos[2] - angle) % (2 * Math.PI) <= Math.PI / 4) {
+                        targetRot = angle + (turns * (2 * Math.PI));
                     }
                 }
             }
-            telemetry.addData("closestPoint", Arrays.toString(closestPoint));
-            telemetry.addData("targetAngle", targetRot);
-            telemetry.addData("nullAngle", nullAngle);
+
 
             if (fieldRelative) {
                 power = calcPowerFR(x, y, currPos);
