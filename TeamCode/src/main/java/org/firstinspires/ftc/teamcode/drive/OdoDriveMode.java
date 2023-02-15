@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareRobot;
 import org.firstinspires.ftc.teamcode.Odometry;
-import org.opencv.core.Mat;
+//import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +76,7 @@ public class OdoDriveMode extends LinearOpMode{
 
         //end-effector
         boolean closed = false;
-        boolean carry = true;
+        boolean carry = false;
         double spinnerPos = 0;
         double gripperDebounceTime = 0;
         double robotRelativeDebounceTime = 0;
@@ -164,7 +164,7 @@ public class OdoDriveMode extends LinearOpMode{
 
             //control spinner pos with joystick
             if(Math.abs(gamepad2.right_stick_y)>0.05){//deadzone
-                spinnerPos = spinnerPos + Math.pow(gamepad2.right_stick_y, 2)*Math.copySign(1, gamepad2.right_stick_y)*0.05;
+                spinnerPos = spinnerPos - Math.pow(gamepad2.right_stick_y, 2)*Math.copySign(1, gamepad2.right_stick_y)*0.05;
                 robot.spinner.setPosition(spinnerPos);
                 manualAdjust = true;
 
