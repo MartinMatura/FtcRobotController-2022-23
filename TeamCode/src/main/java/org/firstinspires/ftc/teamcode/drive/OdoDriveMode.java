@@ -78,6 +78,7 @@ public class OdoDriveMode extends LinearOpMode{
         boolean closed = false;
         double spinnerPos = 0;
         double gripperDebounceTime = 0;
+        double robotRelativeDebounceTime = 0;
 
         //lift
         double liftPos = 0;
@@ -212,7 +213,8 @@ public class OdoDriveMode extends LinearOpMode{
               Gamepad 1 = driver control
              */
 
-            if(gamepad1.right_bumper){
+            if(gamepad1.right_bumper && robotRelativeDebounceTime < runtime.time()){
+                robotRelativeDebounceTime = runtime.time() + 0.5; //delay
                 fieldRelative = !fieldRelative;
             }
 
