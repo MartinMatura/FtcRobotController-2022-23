@@ -163,7 +163,7 @@ public class OdoDriveMode extends LinearOpMode{
 
             //control spinner pos with joystick
             if(Math.abs(gamepad2.right_stick_y)>0.05){//deadzone
-                spinnerPos = spinnerPos + gamepad2.right_stick_y*0.05;
+                spinnerPos = spinnerPos + Math.pow(gamepad2.right_stick_y, 2)*Math.copySign(1, gamepad2.right_stick_y)*0.05;
                 robot.spinner.setPosition(spinnerPos);
             }
 
@@ -172,10 +172,10 @@ public class OdoDriveMode extends LinearOpMode{
                 liftManualOp = true;
                 robot.lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 if (gamepad2.left_stick_y < 0) {
-                    robot.lift.setPower(gamepad2.left_stick_y * 0.3);
+                    robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.3);
                 }
                 else {
-                    robot.lift.setPower(gamepad2.left_stick_y * 0.1);
+                    robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.15);
                 }
             }
             else if(liftManualOp && Math.abs(gamepad2.left_stick_y)<0.05){
@@ -208,7 +208,7 @@ public class OdoDriveMode extends LinearOpMode{
                 setLiftPos(0 + liftResetVal, 0.75+spinner90);
             }
 
-            runLift(0.5,0.1,liftManualOp);
+            runLift(0.5,0.15,liftManualOp);
 
 
             /**
