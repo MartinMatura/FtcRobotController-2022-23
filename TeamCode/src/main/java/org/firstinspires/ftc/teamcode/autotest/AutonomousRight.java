@@ -52,12 +52,14 @@ public class AutonomousRight extends LinearOpMode {
         double[][] targetPoints = {
                 {0,    0, 0,     0,    1,  0.3}, //grab cone tight
                 {-67, -0.51, 0,    -850,    1,  0.3}, //move to intersection 1
-                {-67, -0.51, -pi,    -850,    1,  0.3}, //rotate on intersection 1
-                {-67-29, 5, -pi,    -850,  0.5, 0.3}, //go to pole
-                {-67-29, 9, -pi,    -850,  0.5, 0.3}, //move back
-                {-67-29, 9, -pi,    -850,  0.45, 0.1}, //drop cone
-                {-67, -0.51, -pi,    -850,    1,  0.3}, //move to intersection 1
-                {-67, -0.51, -pi,    0,    1,  0.1}, //drop lift in intersection 1
+                {-67, -0.51, -pi*3/4,    -720,    1,  0.3}, //rotate on intersection 1
+                {-67, -0.51, -pi*3/4,    -720,  0.45, 0.1}, //drop cone
+                {-67, -0.51, -pi,    -720,    1,  0.3}, //move to intersection 1 again
+                //{-67-29, 5, -pi,    -850,  0.5, 0.3}, //go to pole
+                //{-67-29, 9, -pi,    -850,  0.5, 0.3}, //move back
+                //{-67-29, 9, -pi,    -850,  0.45, 0.1}, //drop cone
+                //{-67, -0.51, -pi,    -850,    1,  0.3}, //move to intersection 1 180
+                //{-67, -0.51, -pi,    0,    1,  0.1}, //drop lift in intersection 1 180
                 //{-67, -0.51, 0,    0,    1,  0.3} move to intersection 1 (no cones)
                 
         }; //array of points we set for the robot as its path
