@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drivemodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -165,11 +165,13 @@ public class OdoDriveMode extends LinearOpMode{
 
             //control spinner pos with joystick
             if(Math.abs(gamepad2.right_stick_y)>0.05){//deadzone
-                spinnerPos = spinnerPos - Math.pow(gamepad2.right_stick_y, 2)*Math.copySign(1, gamepad2.right_stick_y)*0.05;
+                spinnerPos = Range.clip(spinnerPos - Math.pow(gamepad2.right_stick_y, 2)*Math.copySign(1, gamepad2.right_stick_y)*0.05,0,1);
                 robot.spinner.setPosition(spinnerPos);
                 manualAdjust = true;
 
             }
+
+            telemetry.addData("spinnerPos", spinnerPos);
 
             //control lift with joystick.
             liftPos = robot.lift.getCurrentPosition();

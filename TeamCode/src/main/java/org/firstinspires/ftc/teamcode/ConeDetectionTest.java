@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.Range;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -15,7 +19,10 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera2;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-//!!!!!!!!!!!!!!!!!DONT USE, OLD VERSION!!!!!!!!!!!!!!!!!!!!, ConeDetectionTest2 instead
+import java.util.Objects;
+
+
+//USE THIS FOR CONE DETECTION
 
 
 /*
@@ -46,10 +53,9 @@ import org.openftc.easyopencv.OpenCvPipeline;
  * Android Camera2 API
  */
 
-@TeleOp
+@Autonomous
 public class ConeDetectionTest extends LinearOpMode {
     OpenCvCamera phoneCam;
-    //Pipeline pipeline;
 
     @Override
     public void runOpMode() {
@@ -61,9 +67,9 @@ public class ConeDetectionTest extends LinearOpMode {
          * the RC phone). If no camera monitor is desired, use the alternate
          * single-parameter constructor instead (commented out below)
          */
-
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
+
         // OR...  Do Not Activate the Camera Monitor View
         //phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK);
 
@@ -72,8 +78,7 @@ public class ConeDetectionTest extends LinearOpMode {
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        //pipeline = new Pipeline();
-        phoneCam.setPipeline(new Pipeline());
+        phoneCam.setPipeline(new ConeDetect());
 
         /*
          * Open the connection to the camera device. New in v1.4.0 is the ability
@@ -123,9 +128,10 @@ public class ConeDetectionTest extends LinearOpMode {
             /*
              * Send some stats to the telemetry
              */
-            //telemetry.addData("ConeColour", Pipeline.analyze());
 
-            telemetry.addData("\nFrame Count", phoneCam.getFrameCount());
+            telemetry.addData("cone colour", ConeDetect.analyze());
+
+            telemetry.addData("Frame Count", phoneCam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", phoneCam.getFps()));
             telemetry.addData("Total frame time ms", phoneCam.getTotalFrameTimeMs());
             telemetry.addData("Pipeline time ms", phoneCam.getPipelineTimeMs());
@@ -155,73 +161,37 @@ public class ConeDetectionTest extends LinearOpMode {
          * if you're doing something weird where you do need it synchronized with your OpMode thread,
          * then you will need to account for that accordingly.
          */
+
     }
 
-    public class Pipeline extends OpenCvPipeline{
+    static class ConeDetect extends OpenCvPipeline {
 
-        int colour; //0=yellow, 1=green, 2=purple
+        static int colour; //0=red, 1=green, 2=blue
 
-        Point topLeftAnchor = new Point(0, 0);
-        Point botRightAnchor = new Point(0, 0);
+        Point topRightAnchor = new Point(155, 140);//x: 190, y: 235   ;change these x, y values to change area where colour is measured (image is 320x240 px)
+        Point botLeftAnchor = new Point(115, 100); //x: 120, y: 200
 
-        Mat regionCb;
-        //Mat YCrCb = new Mat();
-        //Mat Cb = new Mat();
+        Mat region;
         Scalar avg;
-        boolean end = false;
-
-        /*void inputToCb(Mat input) {
-            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cb, 2);
-        }*/
-
-        /*@Override
-        public void init(Mat firstFrame){
-            //inputToCb(firstFrame);
-        }*/
 
         @Override
-        public Mat processFrame(Mat input){
-            //inputToCb(input);
+        public Mat processFrame(Mat input) {
 
-            for (int i = 240; i > 0; i--) {
-                int counter = 0;
-                for (int j = 320; j > 0; j--) {
-                    /*!!!possible error - some rgb values are null - results in null pointer exception!!!*/
-                    double[] rgb = input.get(i, j);
-                    if (rgb[0] > 120 && rgb[1] < 20 && rgb[2] < 20) {
-                        counter++;
-                    } else {
-                        if (counter > 20) {
-                            botRightAnchor = new Point(i, j - 3 * counter / 4);
-                            topLeftAnchor = new Point(4 * i / 3, j - counter / 4);
-                            end = true;
-                            break;
-                        }
-                        counter = 0;
-                    }
-                }
-                if(end){break;}
-            }
+            region = input.submat(new Rect(topRightAnchor, botLeftAnchor));
+            avg = Core.mean(region);
 
-            Imgproc.rectangle(input, topLeftAnchor, botRightAnchor, new Scalar(255,0,0), 2);
-            regionCb = input.submat(new Rect(topLeftAnchor, botRightAnchor));
-            avg = Core.mean(regionCb);
-
-            if((int)avg.val[0] > 200 && (int)avg.val[1] > 200 && (int)avg.val[2] < 120) {
+            if (avg.val[0] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {//val[0] = red, 1 = green, 2 = blue
                 colour = 0;
-            }else if((int)avg.val[0] < 220 && (int)avg.val[1] > 220 && (int)avg.val[2] < 220){
+            } else if (avg.val[1] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
                 colour = 1;
-            }else{
+            } else if (avg.val[2] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
                 colour = 2;
             }
-
-            Imgproc.rectangle(input, topLeftAnchor, botRightAnchor, avg, -1);
-
+            Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);//fill rectangle where avg colour is measured by the avg colour
             return input;
         }
 
-        public int analyze(){
+        public static int analyze() {
             return colour;
         }
     }

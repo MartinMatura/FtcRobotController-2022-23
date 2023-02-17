@@ -128,9 +128,9 @@ public class ConeDetectionTest2 extends LinearOpMode {
             /*
              * Send some stats to the telemetry
              */
-            telemetry.addData("red", ConeDetect.r());
-            telemetry.addData("green", ConeDetect.g());
-            telemetry.addData("blue", ConeDetect.b());
+            telemetry.addData("r", ConeDetect.r());
+            telemetry.addData("g", ConeDetect.g());
+            telemetry.addData("b", ConeDetect.b());
             telemetry.addData("counter", ConeDetect.counter());
             telemetry.addData("cone colour", ConeDetect.analyze());
             telemetry.addData("row", ConeDetect.row());
@@ -173,55 +173,64 @@ public class ConeDetectionTest2 extends LinearOpMode {
 
         static int colour; //0=red, 1=green, 2=blue
 
-        Point topRightAnchor = new Point(190, 235);//change these x, y values to change area where colour is measured (image is 320x240 px)
-        Point botLeftAnchor = new Point(120, 200);
+        Point topRightAnchor = new Point(190, 235);//x: 190, y: 235   ;change these x, y values to change area where colour is measured (image is 320x240 px)
+        Point botLeftAnchor = new Point(120, 200); //x: 120, y: 200
 
         Mat region;
-        //Mat YCrCb = new Mat();
-        //Mat Cb = new Mat();
+        //Mat Hsv = new Mat();
+        //Mat Hue = new Mat();
         Scalar avg;
-        boolean end = false;
+        boolean end, detect = false;
 
         static double r;
         static double g;
         static double b;
-        static int counter;
-        static int i;
-        static int j;
+        static double prevR;
+        static double prevG;
+        static double prevB;
+        static double dR, dG, dB;
+        static int counter, row = 0;
+        static int i, j;
 
-        /*void inputToCb(Mat input) {
-            Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
-            Core.extractChannel(YCrCb, Cb, 2);
-        }*/
+        /*void inputToHsv(Mat input) {
+            Imgproc.cvtColor(input, Hsv, Imgproc.COLOR_BGR2HSV);
+            //Core.extractChannel(YCrCb, Cb, 2);
+        }
 
-        /*@Override
+        @Override
         public void init(Mat firstFrame){
-            inputToCb(firstFrame);
+            inputToHsv(firstFrame);
         }*/
 
         @Override
         public Mat processFrame(Mat input) {
-            //inputToCb(input);
+            //inputToHsv(input);
 
-            /*r = input.get(input.height()/2, input.width()/2)[0];
-            g = input.get(input.height()/2, input.width()/2)[1];
-            b = input.get(input.height()/2, input.width()/2)[2];*/
-
-            if (!input.empty()) {//this should have automatically detected the cone and changed the anchors, currently the area where avg colour is measured is hardcoded above
-                /*for (i = 1; i < input.height(); i++) { //i is row (y coord), j is column (x coord)
-                    for (j = 1; j < input.width(); j++) {
+            if (!input.empty()) {
+                for (i = input.height()-1; i >= 0; i--) { //i is row (y coord), j is column (x coord)
+                    for (j = input.width()-1; j >= 0; j--) {
+                        prevR = r;
                         r = input.get(i, j)[0];
+                        prevG = g;
                         g = input.get(i, j)[1];
+                        prevB = b;
                         b = input.get(i, j)[2];
-                        double avg = (r + g + b) / 3;
-                        if (r > avg * 1.5) {
+                        dR = prevR - r;
+                        dG = prevG - g;
+                        dB = prevB - b;
+                        double avg = (r + g + b) / 3.0;
+                        if ((counter == 0 && dG + dB - dR > 90) || (counter > 0 && r > avg * 1.2)) {
                             counter++;
-                        } else if (counter > 40) {
-                            botLeftAnchor = new Point(i, Range.clip(Math.floor(j - 3.0 * counter / 4.0), 0, input.height()));
-                            topRightAnchor = new Point(Range.clip(Math.floor(i + 4.5 * counter / 4.0), 0, input.width()), Range.clip(Math.floor(j - counter / 4.0), 0, input.height()));
-                            end = true;
+                        } else if (counter > 30) {
+                            row++;
+                            detect = true;
+                            if(row == 2){
+                                botLeftAnchor = new Point(i, Range.clip(Math.floor(j - 3.0 * counter / 4.0), 0, input.height()-1));
+                                topRightAnchor = new Point(Range.clip(Math.floor(i + 4.5 * counter / 4.0), 0, input.width()-1), Range.clip(Math.floor(j - counter / 4.0), 0, input.height()-1));
+                                end = true;
+                            }
                         }
-                        Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, new Scalar(0, 0, 255), 2);
+                        Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, new Scalar(255, 255, 255), 2);
                         if (end) {
                             break;
                         }
@@ -231,7 +240,10 @@ public class ConeDetectionTest2 extends LinearOpMode {
                         end = false;
                         break;
                     }
-                }*/
+                    if(!detect){
+                        row = 0;
+                    }
+                }
 
                 region = input.submat(new Rect(topRightAnchor, botLeftAnchor));
                 avg = Core.mean(region);
@@ -242,14 +254,14 @@ public class ConeDetectionTest2 extends LinearOpMode {
                 } else if (avg.val[1] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
                     colour = 1;
                     Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);
-                } else if (avg.val[3] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
+                } else if (avg.val[2] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
                     colour = 2;
                     Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);
                 }
 
                 return input;
             }
-            return null;
+            return input;
         }
 
         public static int analyze(){
