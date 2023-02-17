@@ -35,7 +35,7 @@ public class AutonomousTestTwo extends LinearOpMode {
         // liftPos (-1100 - 0)
         // spinnerPos (0 - 1) when lift down(0.75=pickup,1=up)
         // grabber (0.3 - closed, 0.1 open)
-        double pi = 3.1416;
+        double pi = Math.PI;
         double[][] targetPoints = {
                 {0,    0, 0,     0,    1,  0.3}, //grab cone tight
                 {-127, 0, 0,    -750,  0.5, 0.3}, //go to pole

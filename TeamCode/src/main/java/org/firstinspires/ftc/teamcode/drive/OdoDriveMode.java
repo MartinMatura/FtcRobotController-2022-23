@@ -274,8 +274,10 @@ public class OdoDriveMode extends LinearOpMode{
 
             if(gamepad1.right_trigger > 0.1) {
                 //find cardinal direction which is the closest to current rotation and orient the robot
-                int turns = (int) (currPos[2] / (2 * Math.PI));
-                for (double angle = rotResetVal; angle < rotResetVal + (2 * Math.PI); angle = angle + (Math.PI / 2)) {
+                int turns = (int) (currPos[2] / (2 * Math.PI)); //number of turns done by the robot (negative or positive int)
+                for (double angle = Math.copySign((Math.abs(rotResetVal) % (2 * Math.PI)), rotResetVal);
+                     angle < (Math.abs(rotResetVal) % (2 * Math.PI)) + (2 * Math.PI);
+                     angle = angle + (Math.PI / 2)) {
                     if (Math.abs(currPos[2] - angle) % (2 * Math.PI) <= Math.PI / 4) {
                         targetRot = angle + (turns * (2 * Math.PI));
                     }
