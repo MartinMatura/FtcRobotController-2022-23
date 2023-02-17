@@ -573,7 +573,7 @@ public class OdoDriveMode extends LinearOpMode{
 
     private double getTargetAngle(double targetAngle){ //update target angle with right stick input
         double turnCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
-        return targetAngle + 0.15 * gamepad1.right_stick_x * turnCoe;
+        return targetAngle + 0.15 * Math.pow(gamepad1.right_stick_x, 2) * Math.copySign(1,gamepad1.right_stick_x) * turnCoe;
     }
 
     double rCurrPos = 0;
