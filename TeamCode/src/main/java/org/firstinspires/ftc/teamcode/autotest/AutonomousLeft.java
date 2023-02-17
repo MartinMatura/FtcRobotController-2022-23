@@ -52,12 +52,12 @@ public class AutonomousLeft extends LinearOpMode {
         double pi = Math.PI;
         double[][] targetPoints = {
                 {0,    0, 0,     0,    1,  0.3}, //grab cone tight
-                {-99.57, 0, 0,    -700,  0.5, 0.3}, //go to pole, lift lift
-                {-99.57, -8.5, 0,    -700,  0.5, 0.3}, //move slightly back
-                {-99.57, -8.5, 0,    -700,  0.45, 0.1}, //drop cone
-                {-99.57, 0, 0,    -700,  0.6, 0.3}, //move forward again
-                {-131.25, 0, 0,    -700, 0.6, 0.1}, //move to intersection
-                {-131.25, 0, 0.14,    0,  1, 0.1}, //drop lift
+                {-95.57, 0, 0,    -700,  0.5, 0.3}, //go to pole, lift lift
+                {-95.57, -8.5, 0,    -700,  0.5, 0.3}, //move slightly back
+                {-95.57, -8.5, 0,    -700,  0.45, 0.1}, //drop cone
+                {-95.57, 0, 0,    -700,  0.6, 0.3}, //move forward again
+                {-125.25, 4, 0.14,    -700, 0.6, 0.1}, //move to intersection
+                {-125.25, 4, 0.14,    0,  1, 0.1}, //drop lift
                 
         }; //array of points we set for the robot as its path
 
@@ -88,9 +88,9 @@ public class AutonomousLeft extends LinearOpMode {
         //get color of cone and change final targetPoint
         int color = ConeDetect.analyze(); //0=red, 1=green, 2=blue
         if(color==1){
-            targetPoints[6] = new double[]{-131.25, -60.96, 0.14, 0, 1, 0.1}; //move back for green
+            targetPoints[6] = new double[]{-125.25, -64.96, 0.14, 0, 1, 0.1}; //move back for green
         } else if (color==2) {
-            targetPoints[6] = new double[]{-131.25, 60.96, 0.14, 0, 1, 0.1}; //move forward for bluex
+            targetPoints[6] = new double[]{-125.25, 64.96, 0.14, 0, 1, 0.1}; //move forward for bluex
         }
 
         //set starting targets

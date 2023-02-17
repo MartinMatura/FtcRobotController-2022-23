@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Odometry {
-
+    //x / (33.56) = 3.01, x = 3.01*33.56
+    //x / 33.56-a = 3.14
+    // -1.4 = -a
     public double[] nowPos(double[] prevPos, double dR, double dL, double dS) {
-        final double D = 33.56; //distance between side odometry wheels
+        final double D = 33.56-0.7; //distance between side odometry wheels
         double deltaAngle = (dR - dL) / D;
         double alpha = deltaAngle/2;
 

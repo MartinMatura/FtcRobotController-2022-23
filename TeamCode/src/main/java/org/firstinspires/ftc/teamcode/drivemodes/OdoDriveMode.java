@@ -113,6 +113,9 @@ public class OdoDriveMode extends LinearOpMode{
 
          */
 
+        //set spinner to top
+        spinnerPos = 1;
+        robot.spinner.setPosition(spinnerPos);
 
         while(opModeIsActive()) {
 
@@ -138,20 +141,16 @@ public class OdoDriveMode extends LinearOpMode{
             if(gamepad2.x && (spinnerDebounceTime < runtime.time())){
                 spinnerDebounceTime = runtime.time() + 0.5; //delay
                 if (!carry) {
-                    robot.spinner.setPosition(robot.spinner.getPosition()+0.25);
                     spinner90 = 0.25;
+                    setLiftPos(liftPos, spinner90);
                 }
                 else {
-                    robot.spinner.setPosition(robot.spinner.getPosition()-0.25);
                     spinner90 = 0;
+                    setLiftPos(liftPos, spinner90);
                 }
                 carry = !carry;
             }
 
-
-            if(gamepad2.right_bumper){
-                robot.grabber.setPosition(0.35);
-            }
 
             //spinner
             if(gamepad2.a){
@@ -181,13 +180,13 @@ public class OdoDriveMode extends LinearOpMode{
                 if(gamepad2.left_stick_y < 0) {
                     robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.3);
                     if(!manualAdjust){
-                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787);
+                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787 + spinner90);
                     }
                 }
                 else {
                     robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.15);
                     if(!manualAdjust){
-                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787);
+                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787 + spinner90);
                     }
                 }
             }
@@ -203,27 +202,27 @@ public class OdoDriveMode extends LinearOpMode{
             }
 
             if(gamepad2.dpad_up){
-                setLiftPos(-1025 + liftResetVal, 0.3+spinner90); //SP 0.3
+                setLiftPos(-1025 + liftResetVal, spinner90); //SP 0.3
                 manualAdjust = false;
             }
 
             if(gamepad2.dpad_right){
-                setLiftPos(-700 + liftResetVal, 0.5+spinner90); //SP 0.5
+                setLiftPos(-700 + liftResetVal, spinner90); //SP 0.5
                 manualAdjust = false;
             }
 
             if(gamepad2.dpad_down){
-                setLiftPos(-100 + liftResetVal, 0.75+spinner90); //SP 0.75
+                setLiftPos(-100 + liftResetVal, spinner90); //SP 0.75
                 manualAdjust = false;
             }
 
             if(gamepad2.dpad_left){
-                setLiftPos(-450 + liftResetVal, 0.6+spinner90); //SP 0.6
+                setLiftPos(-450 + liftResetVal, spinner90); //SP 0.6
                 manualAdjust = false;
             }
 
             if(gamepad2.left_bumper){
-                setLiftPos(0 + liftResetVal, 0.75+spinner90); //SP 0.75
+                setLiftPos(0 + liftResetVal, spinner90); //SP 0.75
                 manualAdjust = false;
             }
 
@@ -497,9 +496,9 @@ public class OdoDriveMode extends LinearOpMode{
         }
     }
 
-    private void setLiftPos(double liftPos, double spinnerPos){
+    private void setLiftPos(double liftPos, double spinner90){
         robot.lift.setTargetPosition((int) (liftPos));
-        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787);
+        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787 + spinner90);
         robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
@@ -574,7 +573,7 @@ public class OdoDriveMode extends LinearOpMode{
 
     private double getTargetAngle(double targetAngle){ //update target angle with right stick input
         double turnCoe = Range.clip(1 - gamepad1.left_trigger, 0.3, 1);
-        return targetAngle + 0.1 * gamepad1.right_stick_x * turnCoe;
+        return targetAngle + 0.15 * gamepad1.right_stick_x * turnCoe;
     }
 
     double rCurrPos = 0;

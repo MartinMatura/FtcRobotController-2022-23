@@ -51,13 +51,14 @@ public class AutonomousRight extends LinearOpMode {
         double pi = 3.1416;
         double[][] targetPoints = {
                 {0,    0, 0,     0,    1,  0.3}, //grab cone tight
-                //{-99.57, 0, 0,    -700,  0.5, 0.3}, //go to pole, lift lift
-                //{-99.57, -8.5, 0,    -700,  0.5, 0.3}, //move slightly back
-                //{-99.57, -8.5, 0,    -700,  0.45, 0.1}, //drop cone
-                //{-99.57, 0, 0,    -700,  0.6, 0.3}, //move forward again
-                {-131.25, 0, 0,    0,    1,  0.3}, //move to intersection
-                {-131.25, 0, 0,    0,    1,  0.3}, //move to correct intersection
-                //{-131.25, 0, 0.14,    0,  1, 0.1}, //drop lift
+                {-67, -0.51, 0,    -850,    1,  0.3}, //move to intersection 1
+                {-67, -0.51, -pi,    -850,    1,  0.3}, //rotate on intersection 1
+                {-67-29, 5, -pi,    -850,  0.5, 0.3}, //go to pole
+                {-67-29, 9, -pi,    -850,  0.5, 0.3}, //move back
+                {-67-29, 9, -pi,    -850,  0.45, 0.1}, //drop cone
+                {-67, -0.51, -pi,    -850,    1,  0.3}, //move to intersection 1
+                {-67, -0.51, -pi,    0,    1,  0.1}, //drop lift in intersection 1
+                //{-67, -0.51, 0,    0,    1,  0.3} move to intersection 1 (no cones)
                 
         }; //array of points we set for the robot as its path
 
@@ -88,9 +89,11 @@ public class AutonomousRight extends LinearOpMode {
         //get color of cone and change final targetPoint
         int color = ConeDetect.analyze(); //0=red, 1=green, 2=blue
         if(color==1){
-            targetPoints[2] = new double[]{-131.25, -60.96, 0,    0,    1,  0.3}; //move back for green
+            targetPoints[7] = new double[]{-67, -59, -pi,    0,    1,  0.1}; //move back for green
+            //targetPoints[2] = new double[]{-67, -62.88, 0,    0,    1,  0.3}; //no cone version
         } else if (color==2) {
-            targetPoints[2] = new double[]{-131.25, 60.96, 0,    0,    1,  0.3}; //move forward for blue
+            targetPoints[7] = new double[]{-67, -0.51+58, -pi,    0,    1,  0.1};//move forward for blue
+            //targetPoints[2] = new double[]{-67, -0.51+58, 0,    0,    1,  0.3};//no cone version
         }
 
         //set starting targets
