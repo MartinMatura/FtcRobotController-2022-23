@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.ConeDetectionTest;
 import org.firstinspires.ftc.teamcode.HardwareRobot;
 import org.firstinspires.ftc.teamcode.Odometry;
 
@@ -26,7 +25,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.Arrays;
 
 @Autonomous(name="Autonomous: Left")
-public class AutonomousTestTwo extends LinearOpMode {
+public class AutonomousLeft extends LinearOpMode {
 
     OpenCvCamera phoneCam;
     HardwareRobot robot = new HardwareRobot();
@@ -67,7 +66,7 @@ public class AutonomousTestTwo extends LinearOpMode {
         //CAMERA
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
-        phoneCam.setPipeline(new AutonomousTestTwo.ConeDetect());
+        phoneCam.setPipeline(new AutonomousLeft.ConeDetect());
         phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
@@ -89,9 +88,9 @@ public class AutonomousTestTwo extends LinearOpMode {
         //get color of cone and change final targetPoint
         int color = ConeDetect.analyze(); //0=red, 1=green, 2=blue
         if(color==1){
-            targetPoints[6] = new double[]{-131.25, 60.96, 0.14, 0, 1, 0.1};
+            targetPoints[6] = new double[]{-131.25, -60.96, 0.14, 0, 1, 0.1}; //move back for green
         } else if (color==2) {
-            targetPoints[6] = new double[]{-131.25, -60.96, 0.14, 0, 1, 0.1};
+            targetPoints[6] = new double[]{-131.25, 60.96, 0.14, 0, 1, 0.1}; //move forward for bluex
         }
 
         //set starting targets
