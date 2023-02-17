@@ -8,7 +8,7 @@ import java.util.List;
 public class Odometry {
 
     public double[] nowPos(double[] prevPos, double dR, double dL, double dS) {
-        final double D = 36.5; //distance between side odometry wheels
+        final double D = 33.56; //distance between side odometry wheels
         double deltaAngle = (dR - dL) / D;
         double alpha = deltaAngle/2;
 
@@ -19,7 +19,7 @@ public class Odometry {
         //} not sure why this is here when it is not used for anything
 
         // the third wheel moves when we rotate, so cancel this out with a prediction
-        final double auxTrackWidth = 15.5; //distance between center and third auxiliary odometry wheel
+        final double auxTrackWidth = 15.34; //distance between center and third auxiliary odometry wheel was 15.5
         double aux_prediction = deltaAngle * auxTrackWidth;
 
         double dY = (dR + dL) / 2; //yDelta

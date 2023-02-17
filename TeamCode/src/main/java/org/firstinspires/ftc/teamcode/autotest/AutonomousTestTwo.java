@@ -7,14 +7,28 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.ConeDetectionTest;
 import org.firstinspires.ftc.teamcode.HardwareRobot;
 import org.firstinspires.ftc.teamcode.Odometry;
 
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera2;
+import org.openftc.easyopencv.OpenCvPipeline;
+
 import java.util.Arrays;
 
-@Autonomous(name="Autonomous: Spline test")
+@Autonomous(name="Autonomous: Left")
 public class AutonomousTestTwo extends LinearOpMode {
 
+    OpenCvCamera phoneCam;
     HardwareRobot robot = new HardwareRobot();
     Odometry odometry = new Odometry();
     private ElapsedTime runtime = new ElapsedTime();
@@ -28,6 +42,7 @@ public class AutonomousTestTwo extends LinearOpMode {
 
         robot.init(hardwareMap);
 
+
         //TARGET POINTS - determine path robot takes - values in each command in this order:
         // X (-left +right)
         // Y (-back +front)
@@ -38,37 +53,46 @@ public class AutonomousTestTwo extends LinearOpMode {
         double pi = 3.1416;
         double[][] targetPoints = {
                 {0,    0, 0,     0,    1,  0.3}, //grab cone tight
-                {-97, 0, 0,    -820,  0.5, 0.3}, //go to pole, lift lift
-                {-97, -8.5, 0,    -820,  0.5, 0.3}, //move slightly back
-                {-97, -8.5, 0,    -820,  0.45, 0.1}, //drop cone
-                {-97, 0, 0,    -820,  0.6, 0.3}, //move forward again
-                {-127, 0, 0,    -820, 0.6, 0.1}, //move to intersection
-                {-127, 0, 0.14,    0,  1, 0.1}, //drop lift
-
-                /* old method
-                {0,    0, 0,     0,    1,  0.3}, //grab cone tight
-                {-125, 0, 0,    -775,  0.5, 0.3}, //go to pole
-                {-125, 0, pi/4, -775,  0.5, 0.3}, //rotate
-                {-125, 0, pi/4, -775,  0.5, 0.1}, //release cone
-                {-125, 0, pi/2, -775,  0.5, 0.1}, //rotate back
-                {-127, 0, pi/2,  0,    1,  0.1}, //drop lift, slightly move to center of intersection
-                {-127, 0, pi,    0,    1,  0.1}, //rotate fully to cone stack
-                {-130, -52, pi,    0,    0.75,  0.1}, //move towards cone stack
-                {-130, -52, pi,    0,    0.75,  0.3}, //grab cone from stack
-                {-127, 0, pi,     -1100,    1,  0.3}, //move to intersection
-                {-127, 0, 7/4*pi, -1100,  0.3,  0.3}, //rotate on intersection
-                {-127, 0, 7/4*pi, -1100,  0.3,  0.1}, //drop second cone
-                {-127, 0, pi,     -1100,    1,  0.1}, //rotate back
-                {-127, -52, pi,    0,    0.75,  0.1}, //drop lift, move to cone stack
-                */
-                //{-100, 0, 0, 0,  1,    0.1},
-                //{-100, 0, 0, -100,  1,    0.1},
+                {-99.57, 0, 0,    -700,  0.5, 0.3}, //go to pole, lift lift
+                {-99.57, -8.5, 0,    -700,  0.5, 0.3}, //move slightly back
+                {-99.57, -8.5, 0,    -700,  0.45, 0.1}, //drop cone
+                {-99.57, 0, 0,    -700,  0.6, 0.3}, //move forward again
+                {-131.25, 0, 0,    -700, 0.6, 0.1}, //move to intersection
+                {-131.25, 0, 0.14,    0,  1, 0.1}, //drop lift
+                
         }; //array of points we set for the robot as its path
 
         int pointCounter = 0; //counts current step in targetPoints Array
 
+        //CAMERA
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
+        phoneCam.setPipeline(new AutonomousTestTwo.ConeDetect());
+        phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+            @Override
+            public void onError(int errorCode) {
+                /*
+                 * This will be called if the camera could not be opened
+                 */
+                telemetry.addLine("Camera could not be accessed");
+                telemetry.update();
+            }
+        });
+
         waitForStart();
         resetEncoders();
+
+        //get color of cone and change final targetPoint
+        int color = ConeDetect.analyze(); //0=red, 1=green, 2=blue
+        if(color==1){
+            targetPoints[6] = new double[]{-131.25, 60.96, 0.14, 0, 1, 0.1};
+        } else if (color==2) {
+            targetPoints[6] = new double[]{-131.25, -60.96, 0.14, 0, 1, 0.1};
+        }
 
         //set starting targets
         double targetX = targetPoints[pointCounter][0];
@@ -144,6 +168,7 @@ public class AutonomousTestTwo extends LinearOpMode {
                 }
             }
 
+            telemetry.addData("color", color);
             telemetry.addData("power", Arrays.toString(power));
             telemetry.addData("currentPos", Arrays.toString(currentPos));
             telemetry.addData("targetX", targetX);
@@ -185,6 +210,38 @@ public class AutonomousTestTwo extends LinearOpMode {
         robot.encR.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         robot.encL.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         robot.encS.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
+    static class ConeDetect extends OpenCvPipeline {
+
+        static int colour; //0=red, 1=green, 2=blue
+
+        Point topRightAnchor = new Point(155, 140);//x: 190, y: 235   ;change these x, y values to change area where colour is measured (image is 320x240 px)
+        Point botLeftAnchor = new Point(115, 100); //x: 120, y: 200
+
+        Mat region;
+        Scalar avg;
+
+        @Override
+        public Mat processFrame(Mat input) {
+
+            region = input.submat(new Rect(topRightAnchor, botLeftAnchor));
+            avg = Core.mean(region);
+
+            if (avg.val[0] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {//val[0] = red, 1 = green, 2 = blue
+                colour = 0;
+            } else if (avg.val[1] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
+                colour = 1;
+            } else if (avg.val[2] > (avg.val[0] + avg.val[1] + avg.val[2]) / 3 * 1.1) {
+                colour = 2;
+            }
+            Imgproc.rectangle(input, topRightAnchor, botLeftAnchor, avg, -1);//fill rectangle where avg colour is measured by the avg colour
+            return input;
+        }
+
+        public static int analyze() {
+            return colour;
+        }
     }
 
 }
