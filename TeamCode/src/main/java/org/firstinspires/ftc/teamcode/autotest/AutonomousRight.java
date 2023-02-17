@@ -55,6 +55,7 @@ public class AutonomousRight extends LinearOpMode {
                 {-67, -0.51, -pi*3/4,    -720,    1,  0.3}, //rotate on intersection 1
                 {-67, -0.51, -pi*3/4,    -720,  0.45, 0.1}, //drop cone
                 {-67, -0.51, -pi,    -720,    1,  0.3}, //move to intersection 1 again
+                {-67, -0.51, -pi,    0,    1,  0.1}, //drop lift in intersection 1
                 //{-67-29, 5, -pi,    -850,  0.5, 0.3}, //go to pole
                 //{-67-29, 9, -pi,    -850,  0.5, 0.3}, //move back
                 //{-67-29, 9, -pi,    -850,  0.45, 0.1}, //drop cone
@@ -91,10 +92,10 @@ public class AutonomousRight extends LinearOpMode {
         //get color of cone and change final targetPoint
         int color = ConeDetect.analyze(); //0=red, 1=green, 2=blue
         if(color==1){
-            targetPoints[7] = new double[]{-67, -59, -pi,    0,    1,  0.1}; //move back for green
+            targetPoints[5] = new double[]{-67, -59, -pi,    0,    1,  0.1}; //move back for green
             //targetPoints[2] = new double[]{-67, -62.88, 0,    0,    1,  0.3}; //no cone version
         } else if (color==2) {
-            targetPoints[7] = new double[]{-67, -0.51+58, -pi,    0,    1,  0.1};//move forward for blue
+            targetPoints[5] = new double[]{-67, -0.51+58, -pi,    0,    1,  0.1};//move forward for blue
             //targetPoints[2] = new double[]{-67, -0.51+58, 0,    0,    1,  0.3};//no cone version
         }
 
