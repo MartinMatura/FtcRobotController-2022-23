@@ -22,6 +22,8 @@ public class OdoDriveMode extends LinearOpMode{
     Odometry odometry = new Odometry();
     private ElapsedTime runtime = new ElapsedTime();
 
+    public double spinnerPos = 0;
+
     @Override
     public void runOpMode(){
         /**
@@ -77,7 +79,6 @@ public class OdoDriveMode extends LinearOpMode{
         //end-effector
         boolean closed = false;
         boolean carry = false;
-        double spinnerPos = 0;
         double gripperDebounceTime = 0;
         double robotRelativeDebounceTime = 0;
         double spinnerDebounceTime = 0;
@@ -114,8 +115,6 @@ public class OdoDriveMode extends LinearOpMode{
          */
 
         //set spinner to top
-        spinnerPos = 1;
-        robot.spinner.setPosition(spinnerPos);
 
         while(opModeIsActive()) {
 
@@ -141,7 +140,7 @@ public class OdoDriveMode extends LinearOpMode{
             if(gamepad2.x && (spinnerDebounceTime < runtime.time())){
                 spinnerDebounceTime = runtime.time() + 0.5; //delay
                 if (!carry) {
-                    spinner90 = 0.25;
+                    spinner90 = 0.324;
                     setLiftPos(liftPos, spinner90);
                 }
                 else {
@@ -180,13 +179,15 @@ public class OdoDriveMode extends LinearOpMode{
                 if(gamepad2.left_stick_y < 0) {
                     robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.3);
                     if(!manualAdjust){
-                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787 + spinner90);
+                        spinnerPos =  ((- Math.pow(10, -7) * Math.pow(liftPos, 2)) + 0.0003407 *liftPos + 0.573 + spinner90);
+                        robot.spinner.setPosition(spinnerPos);
                     }
                 }
                 else {
                     robot.lift.setPower(Math.pow(gamepad2.left_stick_y, 2)*Math.copySign(1, gamepad2.left_stick_y)* 0.15);
                     if(!manualAdjust){
-                        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787 + spinner90);
+                        spinnerPos =  ((- Math.pow(10, -7) * Math.pow(liftPos, 2)) + 0.0003407 *liftPos + 0.573 + spinner90);
+                        robot.spinner.setPosition(spinnerPos);
                     }
                 }
             }
@@ -498,7 +499,8 @@ public class OdoDriveMode extends LinearOpMode{
 
     private void setLiftPos(double liftPos, double spinner90){
         robot.lift.setTargetPosition((int) (liftPos));
-        robot.spinner.setPosition( - Math.pow(9, -8) * Math.pow(liftPos, 2) + 0.0004058 *liftPos + 0.787 + spinner90);
+        spinnerPos =  ((- Math.pow(10, -7) * Math.pow(liftPos, 2)) + 0.0003407 *liftPos + 0.573 + spinner90);
+        robot.spinner.setPosition(spinnerPos);
         robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
